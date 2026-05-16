@@ -5,7 +5,8 @@ const jwt = require('jsonwebtoken');
 // Helper to get current user's profile
 const getMyProfile = async (token) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    return await Profile.findOne({ rollNo: decoded.rollNo });
+    const rollNo = decoded.rollNo;
+    return await Profile.findOne({ $or: [{ rollNo }, { rollNo: String(rollNo) }] });
 };
 
 exports.searchPeople = async (req, res) => {
@@ -53,15 +54,27 @@ exports.sendRequest = async (req, res) => {
             return res.status(400).json({ message: "Please complete your profile first!" });
         }
 
-        const targetProfile = await Profile.findOne({ rollNo: targetRollNo });
+        // Match both string and number forms of rollNo
+        const targetProfile = await Profile.findOne({
+            $or: [{ rollNo: targetRollNo }, { rollNo: String(targetRollNo) }]
+        });
 
-        if (!targetProfile || myProfile.rollNo === targetRollNo) {
-            return res.status(400).json({ message: "Invalid target" });
+        if (!targetProfile) {
+            return res.status(400).json({ message: "User not found" });
         }
 
-        // Check if already friends or request pending
-        if (myProfile.friends.includes(targetProfile._id)) {
+        if (String(myProfile.rollNo) === String(targetRollNo)) {
+            return res.status(400).json({ message: "Cannot send request to yourself" });
+        }
+
+        // Check if already friends
+        if (myProfile.friends.map(id => id.toString()).includes(targetProfile._id.toString())) {
             return res.status(400).json({ message: "Already friends" });
+        }
+
+        // Check if request already sent
+        if (myProfile.sentRequests.map(id => id.toString()).includes(targetProfile._id.toString())) {
+            return res.status(400).json({ message: "Request already sent" });
         }
 
         // Add to target's friendRequests
@@ -83,6 +96,7 @@ exports.sendRequest = async (req, res) => {
 
         res.status(200).json({ message: "Request sent" });
     } catch (error) {
+        console.error("sendRequest error:", error.message);
         res.status(500).json({ message: "Failed to send request" });
     }
 };
@@ -149,30 +163,31 @@ exports.getSuggestions = async (req, res) => {
     try {
         const { token } = req.body;
         const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        const myRollNo = Number(decoded.rollNo);
-        
-        const myProfile = await Profile.findOne({ rollNo: myRollNo });
+        const myRollNo = decoded.rollNo;
+
+        // Find profile matching either string or number rollNo
+        const myProfile = await Profile.findOne({
+            $or: [{ rollNo: myRollNo }, { rollNo: String(myRollNo) }]
+        });
+
         const excludeIds = [];
-        
         if (myProfile) {
             excludeIds.push(myProfile._id);
-            // Optional: still exclude friends for better UX
             (myProfile.friends || []).forEach(id => excludeIds.push(id));
             (myProfile.sentRequests || []).forEach(id => excludeIds.push(id));
         } else {
-            // Just find any profile with this rollNo to exclude
-            const temp = await Profile.findOne({ rollNo: myRollNo });
-            if (temp) excludeIds.push(temp._id);
+            // Profile doesn't exist yet — return empty gracefully
+            return res.status(200).json([]);
         }
 
-        // Find anyone NOT in the exclude list
         const suggestions = await Profile.find({
             _id: { $nin: excludeIds }
         }).limit(8);
 
         res.status(200).json(suggestions);
     } catch (error) {
-        console.error("Debug suggestions error:", error);
-        res.status(500).json({ message: "Error" });
+        console.error("Suggestions error:", error.message);
+        // Return empty array instead of 500 to prevent frontend crash
+        res.status(200).json([]);
     }
 };

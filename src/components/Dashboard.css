@@ -1017,20 +1017,22 @@ body {
 .db-connect-btn {
   margin-left: auto;
   padding: 5px 12px;
-  background: var(--ink);
-  color: var(--cream);
+  background: var(--gold);
+  color: var(--ink);
   border: none;
   border-radius: 6px;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.72rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.db-connect-btn:hover {
-  opacity: 0.8;
+.db-connect-btn:hover:not(:disabled) {
+  background: var(--gold-dark);
+  transform: scale(1.05);
 }
 
 .db-connect-btn.sent {
@@ -1039,6 +1041,13 @@ body {
   border: 1px solid #bbf7d0;
   cursor: default;
   opacity: 1;
+}
+
+.db-connect-btn.connecting {
+  background: var(--cream-dark);
+  color: var(--muted);
+  cursor: wait;
+  opacity: 0.8;
 }
 
 .avatar-img-small {

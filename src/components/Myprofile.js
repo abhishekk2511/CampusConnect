@@ -1,58 +1,32 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import './Myprofile.css';
-import { 
-  Camera, 
-  Edit3, 
-  Globe, 
-  Hash, 
-  MapPin, 
-  Calendar, 
-  Briefcase, 
-  CheckCircle2,
-  Image as ImageIcon,
-  Heart,
-  MessageSquare,
-  Share2
-} from 'lucide-react';
 import moment from 'moment';
 
 export const Myprofile = () => {
     const token = localStorage.getItem('token');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [activeTab, setActiveTab] = useState('posts'); // 'posts' | 'about'
     const [profile, setProfile] = useState({
-        name: '',
-        email: '',
-        rollNo: '',
-        year: '',
-        branch: '',
-        image: '',
-        company: '',
-        jobTitle: ''
+        name: '', email: '', rollNo: '', year: '', branch: '', image: '', company: '', jobTitle: ''
     });
     const [posts, setPosts] = useState([]);
     const [editForm, setEditForm] = useState({});
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
 
-    useEffect(() => {
-        if (token) {
-            fetchProfile();
-        }
-    }, [token]);
+    useEffect(() => { if (token) fetchProfile(); }, [token]);
 
     const fetchProfile = async () => {
         try {
             setLoading(true);
             const response = await axios.post('http://localhost:5000/api/getprofile', { token });
             const data = response.data.uploads || null;
-            
-            console.log("Profile response:", response.data);
-
             if (data) {
                 const profileObj = {
-                    name: data.name || 'Alumni / Student',
+                    name: data.name || 'GGSIPU Member',
                     email: data.email || '',
                     rollNo: String(data.rollNo || ''),
                     year: data.year || '',
@@ -64,49 +38,32 @@ export const Myprofile = () => {
                 };
                 setProfile(profileObj);
                 setEditForm(profileObj);
-
-                // Use the posts already provided by getprofile
                 setPosts(data.posts || []);
             } else {
-                // If no profile record yet, we can try to extract rollNo from token to at least show posts
                 try {
                     const base64Url = token.split('.')[1];
                     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-                    const decoded = JSON.parse(jsonPayload);
-                    
+                    const decoded = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
                     if (decoded.rollNo) {
                         setProfile(prev => ({ ...prev, rollNo: decoded.rollNo }));
                         const postsRes = await axios.post('http://localhost:5000/api/myuploads', { rollNo: decoded.rollNo });
                         setPosts(postsRes.data || []);
                     }
-                } catch (e) {
-                    console.log("Token decode error", e);
-                }
+                } catch (e) {}
             }
-            setLoading(false);
         } catch (error) {
-            console.error("Error fetching profile", error);
+            console.error('Error fetching profile', error);
+        } finally {
             setLoading(false);
         }
     };
 
-    const handleEditToggle = () => {
-        setIsEditing(!isEditing);
-        if (!isEditing) {
-            setEditForm(profile);
-            setImagePreview(null);
-        }
-    };
-
-    const handleInputChange = (e) => {
+    const handleInputChange = e => {
         const { name, value } = e.target;
         setEditForm(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleImageChange = (e) => {
+    const handleImageChange = e => {
         const file = e.target.files[0];
         if (file) {
             setEditForm(prev => ({ ...prev, newImage: file }));
@@ -116,10 +73,10 @@ export const Myprofile = () => {
         }
     };
 
-    const handleSave = async (e) => {
+    const handleSave = async e => {
         e.preventDefault();
         try {
-            setLoading(true);
+            setSaving(true);
             const formData = new FormData();
             formData.append('token', token);
             formData.append('name', editForm.name);
@@ -127,183 +84,268 @@ export const Myprofile = () => {
             formData.append('branch', editForm.branch);
             formData.append('company', editForm.company);
             formData.append('jobTitle', editForm.jobTitle);
-            if (editForm.newImage) {
-                formData.append('setimage', editForm.newImage);
-            }
+            if (editForm.newImage) formData.append('setimage', editForm.newImage);
 
             const res = await axios.post('http://localhost:5000/api/editprofile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-
             if (res.data.success) {
-                alert("Profile updated successfully! ✨");
                 setIsEditing(false);
+                setImagePreview(null);
                 fetchProfile();
             }
-        } catch (error) {
-            alert("Failed to update profile.");
+        } catch {
+            alert('Failed to update profile.');
         } finally {
-            setLoading(false);
+            setSaving(false);
         }
     };
 
-    if (loading && !isEditing) {
-        return (
-            <div className="profile-loading-screen">
-                <div className="premium-loader"></div>
-                <p>Curating your experience...</p>
-            </div>
-        );
-    }
+    const avatarSrc = imagePreview ||
+        (profile.image ? `http://localhost:5000/uploads/${profile.image}` : null);
+
+    const initials = profile.name ? profile.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '?';
+
+    const totalLikes = posts.reduce((sum, p) => sum + (p.likes?.length || 0), 0);
+
+    if (loading) return (
+        <div className="mp-loading">
+            <div className="mp-spinner" />
+            <p>Loading profile…</p>
+        </div>
+    );
 
     return (
-        <div className="profile-root">
-            <div className="profile-container-main">
-                {/* ── TOP SECTION: Cover & Stats ── */}
-                <div className="profile-header-card">
-                    <div className="header-cover">
-                        <div className="header-overlay"></div>
-                        <button className="action-pill-btn" onClick={handleEditToggle}>
-                            {isEditing ? 'Cancel' : <><Edit3 size={16} /> Edit Profile</>}
+        <div className="mp-root">
+
+            {/* ── Cover Banner ── */}
+            <div className="mp-cover">
+                <div className="mp-cover-gradient" />
+                <div className="mp-cover-pattern" />
+
+                {/* Back link */}
+                <a href="/dashboard" className="mp-back-btn">← Back to Feed</a>
+
+                {/* Edit toggle */}
+                <button className="mp-edit-toggle" onClick={() => { setIsEditing(!isEditing); setImagePreview(null); }}>
+                    {isEditing ? '✕ Cancel' : '✏ Edit Profile'}
+                </button>
+            </div>
+
+            {/* ── Profile Hero ── */}
+            <div className="mp-hero">
+                {/* Avatar */}
+                <div className="mp-avatar-wrap" onClick={() => isEditing && fileInputRef.current?.click()}>
+                    {avatarSrc ? (
+                        <img src={avatarSrc} alt="avatar" className="mp-avatar-img" />
+                    ) : (
+                        <div className="mp-avatar-initials">{initials}</div>
+                    )}
+                    {isEditing && (
+                        <div className="mp-avatar-overlay">
+                            <span>📷</span>
+                        </div>
+                    )}
+                    <input type="file" ref={fileInputRef} onChange={handleImageChange} hidden accept="image/*" />
+                </div>
+
+                {/* Identity */}
+                <div className="mp-identity">
+                    <div className="mp-name-row">
+                        <h1 className="mp-name">{profile.name || 'Your Name'}</h1>
+                        <span className="mp-verified">✓</span>
+                    </div>
+                    <p className="mp-headline">
+                        {profile.jobTitle
+                            ? `${profile.jobTitle}${profile.company ? ` @ ${profile.company}` : ''}`
+                            : `${profile.branch || 'Student'} · GGSIPU`}
+                    </p>
+                    <div className="mp-meta-pills">
+                        {profile.rollNo && <span className="mp-pill">#{profile.rollNo}</span>}
+                        {profile.year && <span className="mp-pill">📅 Class of {profile.year}</span>}
+                        {profile.branch && <span className="mp-pill">🎓 {profile.branch}</span>}
+                        <span className="mp-pill">📍 New Delhi, India</span>
+                    </div>
+                </div>
+
+                {/* Stats row */}
+                <div className="mp-stats-row">
+                    <div className="mp-stat-box">
+                        <strong>{posts.length}</strong>
+                        <span>Posts</span>
+                    </div>
+                    <div className="mp-stat-box">
+                        <strong>{profile.friends?.length || 0}</strong>
+                        <span>Connections</span>
+                    </div>
+                    <div className="mp-stat-box">
+                        <strong>{totalLikes}</strong>
+                        <span>Likes</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Edit Form (slides in) ── */}
+            {isEditing && (
+                <div className="mp-edit-panel">
+                    <h3>Update Profile</h3>
+                    <form className="mp-edit-form" onSubmit={handleSave}>
+                        <div className="mp-ef-grid">
+                            <div className="mp-ef-field">
+                                <label>Full Name</label>
+                                <input name="name" value={editForm.name} onChange={handleInputChange} required placeholder="Your full name" />
+                            </div>
+                            <div className="mp-ef-field">
+                                <label>Graduation Year</label>
+                                <input name="year" value={editForm.year} onChange={handleInputChange} required placeholder="e.g. 2024" />
+                            </div>
+                            <div className="mp-ef-field">
+                                <label>Branch / Department</label>
+                                <input name="branch" value={editForm.branch} onChange={handleInputChange} required placeholder="e.g. CSE" />
+                            </div>
+                            <div className="mp-ef-field">
+                                <label>Current Company</label>
+                                <input name="company" value={editForm.company} onChange={handleInputChange} placeholder="e.g. Google" />
+                            </div>
+                            <div className="mp-ef-field mp-ef-full">
+                                <label>Job Title</label>
+                                <input name="jobTitle" value={editForm.jobTitle} onChange={handleInputChange} placeholder="e.g. Software Engineer" />
+                            </div>
+                        </div>
+                        <button type="submit" className="mp-save-btn" disabled={saving}>
+                            {saving ? <><span className="mp-btn-spinner" /> Saving…</> : '💾 Save Changes'}
                         </button>
-                    </div>
+                    </form>
+                </div>
+            )}
 
-                    <div className="header-main-content">
-                        <div className="avatar-section">
-                            <div className="avatar-frame">
-                                {isEditing ? (
-                                    <div className="avatar-edit-trigger" onClick={() => fileInputRef.current.click()}>
-                                    <img 
-                                        src={profile.image ? `http://localhost:5000/uploads/${profile.image}` : `https://ui-avatars.com/api/?name=${profile.name}&background=random&color=fff`} 
-                                        alt="" 
-                                    />
-                                        <div className="cam-overlay"><Camera size={24} /></div>
-                                        <input type="file" ref={fileInputRef} onChange={handleImageChange} hidden accept="image/*" />
-                                    </div>
-                                ) : (
-                                    <img 
-                                        src={profile.image ? `http://localhost:5000/uploads/${profile.image}` : `https://ui-avatars.com/api/?name=${profile.name}&background=random&color=fff`} 
-                                        alt="" 
-                                    />
-                                )}
-                            </div>
-                        </div>
+            {/* ── Tab Bar ── */}
+            <div className="mp-tabs">
+                <button className={`mp-tab ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>
+                    📸 Posts ({posts.length})
+                </button>
+                <button className={`mp-tab ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+                    👤 About
+                </button>
+            </div>
 
-                        {!isEditing ? (
-                            <div className="identity-section">
-                                <div className="name-row">
-                                    <h1>{profile.name}</h1>
-                                    <CheckCircle2 size={20} className="verified-icon" />
-                                </div>
-                                <p className="headline">
-                                    {profile.jobTitle ? `${profile.jobTitle} @ ${profile.company}` : `${profile.branch} Student · GGSIPU`}
-                                </p>
-                                
-                                <div className="quick-stats">
-                                    <div className="q-stat"><Hash size={14} /> <span>{profile.rollNo || "No Roll No"}</span></div>
-                                    <div className="q-stat"><Calendar size={14} /> <span>Class of {profile.year || "2024"}</span></div>
-                                    <div className="q-stat"><Globe size={14} /> <span>{profile.branch || "General"}</span></div>
-                                </div>
+            {/* ── Content ── */}
+            <div className="mp-content">
+
+                {activeTab === 'posts' && (
+                    <div className="mp-posts-grid">
+                        {posts.length === 0 ? (
+                            <div className="mp-empty">
+                                <span className="mp-empty-icon">📭</span>
+                                <h3>No posts yet</h3>
+                                <p>Share your first update with the campus network!</p>
+                                <a href="/upload" className="mp-upload-link">＋ Upload a Post</a>
                             </div>
                         ) : (
-                            <div className="identity-section editing">
-                                <h2>Refining your Identity</h2>
-                                <p>Ensure your professional details are up to date.</p>
-                            </div>
+                            posts.map(post => (
+                                <div key={post._id} className="mp-post-card">
+                                    <div className="mp-pc-header">
+                                        <div className="mp-pc-avatar">
+                                            {avatarSrc ? <img src={avatarSrc} alt="" /> : initials}
+                                        </div>
+                                        <div className="mp-pc-meta">
+                                            <strong>{profile.name}</strong>
+                                            <span>{moment(post.createdAt).fromNow()}</span>
+                                        </div>
+                                    </div>
+
+                                    {post.description && <p className="mp-pc-text">{post.description}</p>}
+
+                                    {post.image && (
+                                        <div className="mp-pc-media">
+                                            <img
+                                                src={post.image.startsWith('http') ? post.image : `http://localhost:5000/uploads/${post.image}`}
+                                                alt=""
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="mp-pc-footer">
+                                        <button className="mp-pc-action">❤ {post.likes?.length || 0}</button>
+                                        <button className="mp-pc-action">💬 {post.comments?.length || 0}</button>
+                                        <button className="mp-pc-action">↗ Share</button>
+                                    </div>
+                                </div>
+                            ))
                         )}
                     </div>
-                </div>
+                )}
 
-                {/* ── BOTTOM SECTION: Details & Timeline ── */}
-                <div className="profile-layout-grid">
-                    
-                    {/* LEFT: Information Panel */}
-                    <aside className="profile-info-aside">
-                        {!isEditing ? (
-                            <div className="info-glass-card">
-                                <h3>About Information</h3>
-                                <div className="info-list">
-                                    <div className="info-item">
-                                        <Globe className="i-icon" />
-                                        <div className="i-text"><label>Branch</label><p>{profile.branch || "Student"}</p></div>
-                                    </div>
-                                    <div className="info-item">
-                                        <Briefcase className="i-icon" />
-                                        <div className="i-text"><label>Organization</label><p>{profile.company || "University Student"}</p></div>
-                                    </div>
-                                    <div className="info-item">
-                                        <MapPin className="i-icon" />
-                                        <div className="i-text"><label>Location</label><p>New Delhi, India</p></div>
-                                    </div>
+                {activeTab === 'about' && (
+                    <div className="mp-about-grid">
+                        <div className="mp-about-card">
+                            <h4>Academic Information</h4>
+                            <div className="mp-about-rows">
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">🎓</span>
+                                    <div><label>Branch</label><p>{profile.branch || '—'}</p></div>
                                 </div>
-                                
-                                <div className="total-impact-stats">
-                                    <div className="impact-box"><strong>{posts.length}</strong><span>Posts</span></div>
-                                    <div className="impact-box"><strong>{profile.friends?.length || 0}</strong><span>Connections</span></div>
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">📅</span>
+                                    <div><label>Graduation Year</label><p>{profile.year || '—'}</p></div>
+                                </div>
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">#️⃣</span>
+                                    <div><label>Roll Number</label><p>{profile.rollNo || '—'}</p></div>
+                                </div>
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">✉️</span>
+                                    <div><label>Email</label><p>{profile.email || '—'}</p></div>
                                 </div>
                             </div>
-                        ) : (
-                            <form className="edit-form-card" onSubmit={handleSave}>
-                                <div className="f-row">
-                                    <div className="f-group"><label>Name</label><input name="name" value={editForm.name} onChange={handleInputChange} required /></div>
-                                    <div className="f-group"><label>Year</label><input name="year" value={editForm.year} onChange={handleInputChange} required /></div>
-                                </div>
-                                <div className="f-row">
-                                    <div className="f-group"><label>Branch</label><input name="branch" value={editForm.branch} onChange={handleInputChange} required /></div>
-                                    <div className="f-group"><label>Company</label><input name="company" value={editForm.company} onChange={handleInputChange} /></div>
-                                </div>
-                                <div className="f-group"><label>Job Title</label><input name="jobTitle" value={editForm.jobTitle} onChange={handleInputChange} /></div>
-                                <button type="submit" className="save-btn-large" disabled={loading}>{loading ? 'Syncing...' : 'Update Profile'}</button>
-                            </form>
-                        )}
-                    </aside>
-
-                    {/* RIGHT: Timeline Feed */}
-                    <main className="profile-timeline-main">
-                        <div className="timeline-top-bar">
-                            <h3>Activity Timeline</h3>
-                            <div className="filter-pill">{posts.length} Total Activities</div>
                         </div>
 
-                        <div className="timeline-scroll">
-                            {posts.length === 0 ? (
-                                <div className="empty-timeline-card">
-                                    <ImageIcon size={48} />
-                                    <p>Your timeline is looking a bit quiet. Share your first milestone!</p>
+                        <div className="mp-about-card">
+                            <h4>Professional Info</h4>
+                            <div className="mp-about-rows">
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">💼</span>
+                                    <div><label>Company</label><p>{profile.company || 'University Student'}</p></div>
                                 </div>
-                            ) : (
-                                posts.map((post) => (
-                                    <div key={post._id} className="timeline-post-entry">
-                                        <div className="entry-header">
-                                            <div className="entry-author-img">
-                                                <img src={profile.image ? `http://localhost:5000/uploads/${profile.image}` : `https://ui-avatars.com/api/?name=${profile.name}&background=random&color=fff`} alt="" />
-                                            </div>
-                                            <div className="entry-meta">
-                                                <strong>{profile.name}</strong>
-                                                <span>{moment(post.createdAt).fromNow()}</span>
-                                            </div>
-                                        </div>
-
-                                        <p className="entry-text">{post.description}</p>
-                                        
-                                        {post.image && (
-                                            <div className="entry-media">
-                                                <img src={post.image.startsWith('http') ? post.image : `http://localhost:5000/uploads/${post.image}`} alt="" />
-                                            </div>
-                                        )}
-
-                                        <div className="entry-actions">
-                                            <button className="e-act"><Heart size={16} /> <span>{post.likes?.length || 0}</span></button>
-                                            <button className="e-act"><MessageSquare size={16} /> <span>{post.comments?.length || 0}</span></button>
-                                            <button className="e-act"><Share2 size={16} /></button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">🏷️</span>
+                                    <div><label>Job Title</label><p>{profile.jobTitle || 'Student'}</p></div>
+                                </div>
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">📍</span>
+                                    <div><label>Location</label><p>New Delhi, India</p></div>
+                                </div>
+                                <div className="mp-about-row">
+                                    <span className="mp-about-icon">🏛️</span>
+                                    <div><label>University</label><p>GGSIPU</p></div>
+                                </div>
+                            </div>
                         </div>
-                    </main>
 
-                </div>
+                        <div className="mp-about-card mp-about-card--full">
+                            <h4>Network Activity</h4>
+                            <div className="mp-network-stats">
+                                <div className="mp-ns-box">
+                                    <strong>{posts.length}</strong>
+                                    <span>Total Posts</span>
+                                </div>
+                                <div className="mp-ns-box">
+                                    <strong>{totalLikes}</strong>
+                                    <span>Total Likes</span>
+                                </div>
+                                <div className="mp-ns-box">
+                                    <strong>{posts.reduce((s, p) => s + (p.comments?.length || 0), 0)}</strong>
+                                    <span>Comments</span>
+                                </div>
+                                <div className="mp-ns-box">
+                                    <strong>{profile.friends?.length || 0}</strong>
+                                    <span>Connections</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

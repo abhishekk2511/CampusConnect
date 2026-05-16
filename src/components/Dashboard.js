@@ -186,6 +186,7 @@ const Dashboard = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [suggestions, setSuggestions] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
+  const [connectingTo, setConnectingTo] = useState(null); // tracks which button is loading
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
@@ -256,30 +257,44 @@ const Dashboard = () => {
   useEffect(() => {
     if (token) {
       fetchNotifications();
-      fetchSuggestions(); // Initial fetch
-      const interval = setInterval(fetchNotifications, 10000); // Poll every 10s
+      fetchSuggestions();
+      loadSentRequests();
+      const interval = setInterval(fetchNotifications, 10000);
       return () => clearInterval(interval);
     }
   }, [token]);
 
   const fetchSuggestions = async () => {
     try {
-      console.log("Fetching suggestions...");
       const res = await axios.post("http://localhost:5000/api/people/suggestions", { token });
-      console.log("Suggestions received:");
-      console.table(res.data);
       setSuggestions(res.data);
     } catch (e) {
       console.log("Suggestions fetch error", e);
     }
   };
 
+  // Pre-load already-sent request IDs from profile data
+  const loadSentRequests = async () => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/getprofile", { token });
+      const sentIds = (res.data?.uploads?.sentRequests || []).map(id => String(id));
+      if (sentIds.length) setSentRequests(prev => [...new Set([...prev, ...sentIds])]);
+    } catch (e) {
+      // Silent — not critical
+    }
+  };
+
   const handleSendRequest = async (rollNo) => {
+    if (sentRequests.includes(rollNo) || connectingTo === rollNo) return;
+    setConnectingTo(rollNo);
     try {
       await axios.post("http://localhost:5000/api/friends/request", { token, targetRollNo: rollNo });
-      setSentRequests([...sentRequests, rollNo]);
+      setSentRequests(prev => [...prev, rollNo]);
     } catch (e) {
-      alert("Failed to send request");
+      const msg = e?.response?.data?.message || "Failed to send request";
+      alert(msg);
+    } finally {
+      setConnectingTo(null);
     }
   };
 
@@ -664,11 +679,11 @@ const Dashboard = () => {
                       </div>
                     </Link>
                     <button 
-                      className={`db-connect-btn ${sentRequests.includes(user.rollNo) ? 'sent' : ''}`}
+                      className={`db-connect-btn ${sentRequests.includes(user.rollNo) ? 'sent' : ''} ${connectingTo === user.rollNo ? 'connecting' : ''}`}
                       onClick={() => handleSendRequest(user.rollNo)}
-                      disabled={sentRequests.includes(user.rollNo)}
+                      disabled={sentRequests.includes(user.rollNo) || connectingTo === user.rollNo}
                     >
-                      {sentRequests.includes(user.rollNo) ? 'Sent' : 'Connect'}
+                      {connectingTo === user.rollNo ? '...' : sentRequests.includes(user.rollNo) ? 'Sent ✓' : '+ Connect'}
                     </button>
                   </div>
                 ))

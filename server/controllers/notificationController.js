@@ -4,13 +4,15 @@ const jwt = require('jsonwebtoken');
 
 const getMyProfile = async (token) => {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    return await Profile.findOne({ rollNo: decoded.rollNo });
+    const rollNo = decoded.rollNo;
+    return await Profile.findOne({ $or: [{ rollNo }, { rollNo: String(rollNo) }] });
 };
 
 exports.getNotifications = async (req, res) => {
     try {
         const { token } = req.body;
         const myProfile = await getMyProfile(token);
+        if (!myProfile) return res.status(200).json([]); // graceful empty response
         const notifications = await Notification.find({ recipient: myProfile._id })
             .populate('sender', 'name image')
             .sort({ createdAt: -1 })
@@ -18,6 +20,7 @@ exports.getNotifications = async (req, res) => {
         
         res.status(200).json(notifications);
     } catch (error) {
+        console.error("getNotifications error:", error.message);
         res.status(500).json({ message: "Failed to fetch notifications" });
     }
 };
