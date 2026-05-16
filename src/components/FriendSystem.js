@@ -18,7 +18,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
 
     const fetchRequests = async () => {
         try {
-            const response = await axios.post("http://localhost:5000/api/friends/get-requests", { token });
+            const response = await axios.post("/api/friends/get-requests", { token });
             setRequests(response.data);
         } catch (error) {
             console.error("Failed to fetch requests", error);
@@ -27,7 +27,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
 
     const fetchFriends = async () => {
         try {
-            const response = await axios.post("http://localhost:5000/api/friends/list", { token });
+            const response = await axios.post("/api/friends/list", { token });
             setFriends(response.data);
         } catch (error) {
             console.error("Failed to fetch friends", error);
@@ -39,7 +39,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
         if (!searchQuery.trim()) return;
         setLoading(true);
         try {
-            const response = await axios.post("http://localhost:5000/api/people/search", { query: searchQuery });
+            const response = await axios.post("/api/people/search", { query: searchQuery });
             setSearchResults(response.data);
         } catch (error) {
             console.error("Search failed", error);
@@ -52,7 +52,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
 
     const sendFriendRequest = async (rollNo) => {
         try {
-            await axios.post("http://localhost:5000/api/friends/request", { token, targetRollNo: rollNo });
+            await axios.post("/api/friends/request", { token, targetRollNo: rollNo });
             setSentInSession([...sentInSession, rollNo]);
             alert("Friend request sent! 🎉");
         } catch (error) {
@@ -62,7 +62,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
 
     const handleRequestAction = async (requestId, action) => {
         try {
-            await axios.post("http://localhost:5000/api/friends/handle-request", { token, requestId, action });
+            await axios.post("/api/friends/handle-request", { token, requestId, action });
             fetchRequests();
             if (action === 'accept') fetchFriends();
         } catch (error) {
@@ -109,7 +109,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
                                 <div key={person.rollNo} className="person-card">
                                     <div className="person-avatar">
                                         {person.image ? (
-                                            <img src={`http://localhost:5000/uploads/${person.image}`} alt={person.name} />
+                                            <img src={`/uploads/${person.image}`} alt={person.name} />
                                         ) : (
                                             person.name.charAt(0)
                                         )}
@@ -137,7 +137,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
                             <div key={req._id} className="request-card">
                                 <div className="person-avatar">
                                     {req.from.image ? (
-                                        <img src={`http://localhost:5000/uploads/${req.from.image}`} alt={req.from.name} />
+                                        <img src={`/uploads/${req.from.image}`} alt={req.from.name} />
                                     ) : (
                                         req.from.name.charAt(0)
                                     )}
@@ -161,7 +161,7 @@ const FriendSystem = ({ setActiveTab, setSelectedFriend }) => {
                             <div key={friend.rollNo} className="friend-card">
                                 <div className="person-avatar">
                                     {friend.image ? (
-                                        <img src={`http://localhost:5000/uploads/${friend.image}`} alt={friend.name} />
+                                        <img src={`/uploads/${friend.image}`} alt={friend.name} />
                                     ) : (
                                         friend.name.charAt(0)
                                     )}

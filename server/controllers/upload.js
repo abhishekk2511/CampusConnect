@@ -53,9 +53,30 @@ exports.uploadImage = async (req, res) => {
 
 exports.getAllUploads = async(req,res) => {
     try {
-        const uploads = await uploadpost.find().sort({ _id: -1 });      
+        const uploads = await uploadpost.aggregate([
+            {
+                $lookup: {
+                    from: "profiles", // Name of the Profile collection in MongoDB
+                    localField: "rollNo",
+                    foreignField: "rollNo",
+                    as: "authorProfile"
+                }
+            },
+            {
+                $addFields: {
+                    authorImage: { $arrayElemAt: ["$authorProfile.image", 0] }
+                }
+            },
+            {
+                $project: {
+                    authorProfile: 0 // Remove the intermediate array
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ]);      
         res.status(200).json(uploads);
     } catch(error) {
+        console.error("getAllUploads error:", error);
         res.status(500).json({ error: error.message });
     }
 }
@@ -63,9 +84,32 @@ exports.getAllUploads = async(req,res) => {
 exports.getmyUploads = async(req,res) => {
     try {
         const {rollNo} = req.body;
-        const uploads = await uploadpost.find({
-            $or: [{ rollNo }, { rollNo: String(rollNo) }]
-        }).sort({ _id: -1 });
+        const uploads = await uploadpost.aggregate([
+            {
+                $match: {
+                    $or: [{ rollNo: rollNo }, { rollNo: String(rollNo) }]
+                }
+            },
+            {
+                $lookup: {
+                    from: "profiles",
+                    localField: "rollNo",
+                    foreignField: "rollNo",
+                    as: "authorProfile"
+                }
+            },
+            {
+                $addFields: {
+                    authorImage: { $arrayElemAt: ["$authorProfile.image", 0] }
+                }
+            },
+            {
+                $project: {
+                    authorProfile: 0
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ]);
         res.status(200).json(uploads);
     } catch(error) {
         res.status(500).json({ error: error.message });
@@ -153,3 +197,47 @@ exports.likePost = async(req,res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+exports.deletePost = async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { token } = req.body;
+
+        if (!token) {
+            return res.status(401).json({ error: "Unauthorized: No token provided" });
+        }
+
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const rollNo = decoded.rollNo;
+
+        const post = await uploadpost.findById(postId);
+        if (!post) {
+            return res.status(404).json({ error: "Post not found" });
+        }
+
+        // Check if the user is the author of the post
+        if (post.rollNo !== rollNo) {
+            return res.status(403).json({ error: "Unauthorized: You can only delete your own posts" });
+        }
+
+        // Delete the post
+        await uploadpost.findByIdAndDelete(postId);
+
+        // Remove post from Profile collection
+        await Profile.findOneAndUpdate(
+            { rollNo },
+            { $pull: { posts: postId } }
+        );
+
+        // Emit real-time event
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('postDeleted', postId);
+        }
+
+        res.status(200).json({ success: true, message: "Post deleted successfully" });
+    } catch (error) {
+        console.error("Delete post error:", error);
+        res.status(500).json({ error: error.message });
+    }
+};

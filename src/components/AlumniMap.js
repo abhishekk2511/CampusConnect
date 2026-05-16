@@ -65,7 +65,7 @@ const AlumniMap = () => {
     const [selectedAlumni, setSelectedAlumni] = useState(null);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/alumni-locations')
+        axios.get('/api/alumni-locations')
             .then(res => { if (res.data?.length) setLocations(prev => [...GGSIPU_ALUMNI, ...res.data]); })
             .catch(() => {});
     }, []);

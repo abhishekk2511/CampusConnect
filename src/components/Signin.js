@@ -21,10 +21,12 @@ const Signin = () => {
         { rollNo, password }
       );
 
-      const token = result.data.token || result.data;
+      const token = result.data.token;
+      const role = result.data.role;
 
       if (token) {
         localStorage.setItem("token", token);
+        localStorage.setItem("role", role || "");
         localStorage.removeItem("Info"); // ← Clear previous user's profile
         navigate("/dashboard");
       } else {

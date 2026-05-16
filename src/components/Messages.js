@@ -28,7 +28,7 @@ const Messages = ({ selectedFriend }) => {
             fetchMessages(activeConvo.otherUser._id);
             
             // Connect to WebSocket
-            const socket = io('http://localhost:5000');
+            const socket = io('');
             
             socket.on('newMessage', (msgObj) => {
                 // If message belongs to current chat
@@ -67,11 +67,11 @@ const Messages = ({ selectedFriend }) => {
     const fetchConversations = async () => {
         try {
             // First get friends to show as potential conversations
-            const friendsRes = await axios.post("http://localhost:5000/api/friends/list", { token });
+            const friendsRes = await axios.post("/api/friends/list", { token });
             const friends = friendsRes.data;
 
             // Then get actual conversation metadata
-            const convosRes = await axios.post("http://localhost:5000/api/private/conversations", { token });
+            const convosRes = await axios.post("/api/private/conversations", { token });
             const realConvos = convosRes.data;
 
             // Merge friends into conversations list
@@ -96,7 +96,7 @@ const Messages = ({ selectedFriend }) => {
 
     const fetchMessages = async (otherUserId) => {
         try {
-            const res = await axios.post("http://localhost:5000/api/private/messages", { token, otherUserId });
+            const res = await axios.post("/api/private/messages", { token, otherUserId });
             setMessages(res.data);
         } catch (error) {
             console.error("Failed to fetch messages", error);
@@ -106,7 +106,7 @@ const Messages = ({ selectedFriend }) => {
     const handleSend = async () => {
         if (!replyText.trim() || !activeConvo) return;
         try {
-            const res = await axios.post("http://localhost:5000/api/private/send", {
+            const res = await axios.post("/api/private/send", {
                 token,
                 receiverId: activeConvo.otherUser._id,
                 text: replyText
@@ -154,7 +154,7 @@ const Messages = ({ selectedFriend }) => {
                         >
                             <div className="avatar">
                                 {convo.otherUser.image ? (
-                                    <img src={`http://localhost:5000/uploads/${convo.otherUser.image}`} alt="" />
+                                    <img src={`/uploads/${convo.otherUser.image}`} alt="" />
                                 ) : (
                                     convo.otherUser.name.charAt(0)
                                 )}
@@ -178,7 +178,7 @@ const Messages = ({ selectedFriend }) => {
                             <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
                                 <div className="avatar">
                                     {activeConvo.otherUser.image ? (
-                                        <img src={`http://localhost:5000/uploads/${activeConvo.otherUser.image}`} alt="" />
+                                        <img src={`/uploads/${activeConvo.otherUser.image}`} alt="" />
                                     ) : (
                                         activeConvo.otherUser.name.charAt(0)
                                     )}

@@ -227,6 +227,19 @@
   flex-shrink: 0;
 }
 
+.mp-role-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.mp-role-badge.student { background: #eff6ff; color: #2563eb; }
+.mp-role-badge.alumni { background: #f0fdf4; color: #16a34a; }
+.mp-role-badge.admin { background: #fef2f2; color: #dc2626; }
+
 .mp-headline {
   font-size: 1.05rem;
   color: var(--mp-muted);
@@ -689,6 +702,61 @@
   letter-spacing: 0.1em;
   color: var(--mp-muted);
   font-weight: 600;
+}
+
+/* Verification Styles */
+.mp-verification-status {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mp-status-verified, .mp-status-pending, .mp-status-rejected, .mp-status-none {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--mp-border);
+}
+
+.mp-status-verified { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); }
+.mp-status-pending { background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.2); }
+.mp-status-rejected { background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2); }
+.mp-status-none { background: rgba(201, 168, 76, 0.05); border-color: rgba(201, 168, 76, 0.2); }
+
+.mp-status-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.mp-verification-status strong {
+    display: block;
+    font-size: 1rem;
+    color: var(--mp-ink);
+    margin-bottom: 4px;
+}
+
+.mp-verification-status p {
+    font-size: 0.85rem;
+    color: var(--mp-muted);
+    margin: 0;
+}
+
+.mp-verify-upload-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: var(--mp-gold);
+    color: var(--mp-ink);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mp-verify-upload-btn:hover {
+    background: var(--mp-gold-dark);
 }
 
 /* ── Responsive ── */

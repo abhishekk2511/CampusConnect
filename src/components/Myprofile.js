@@ -10,7 +10,7 @@ export const Myprofile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState('posts'); // 'posts' | 'about'
     const [profile, setProfile] = useState({
-        name: '', email: '', rollNo: '', year: '', branch: '', image: '', company: '', jobTitle: ''
+        name: '', email: '', rollNo: '', year: '', branch: '', image: '', company: '', jobTitle: '', role: ''
     });
     const [posts, setPosts] = useState([]);
     const [editForm, setEditForm] = useState({});
@@ -34,7 +34,10 @@ export const Myprofile = () => {
                     image: data.image || '',
                     company: data.company || '',
                     jobTitle: data.jobTitle || '',
-                    friends: data.friends || []
+                    friends: data.friends || [],
+                    isVerified: data.isVerified || false,
+                    verificationStatus: data.verificationStatus || 'none',
+                    role: data.role || 'student'
                 };
                 setProfile(profileObj);
                 setEditForm(profileObj);
@@ -101,6 +104,31 @@ export const Myprofile = () => {
         }
     };
 
+    const handleVerificationUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setSaving(true);
+            const formData = new FormData();
+            formData.append('token', token);
+            formData.append('doc', file);
+
+            const res = await axios.post('http://localhost:5000/api/verify/request', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            if (res.data.success) {
+                alert("Verification request submitted!");
+                fetchProfile();
+            }
+        } catch (error) {
+            alert("Failed to upload verification document");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const avatarSrc = imagePreview ||
         (profile.image ? `http://localhost:5000/uploads/${profile.image}` : null);
 
@@ -153,7 +181,10 @@ export const Myprofile = () => {
                 <div className="mp-identity">
                     <div className="mp-name-row">
                         <h1 className="mp-name">{profile.name || 'Your Name'}</h1>
-                        <span className="mp-verified">✓</span>
+                        <span className={`mp-role-badge ${profile.role}`}>
+                            {profile.role === 'alumni' ? '🎓 Alumni' : profile.role === 'admin' ? '🛡️ Admin' : '📚 Student'}
+                        </span>
+                        {profile.isVerified && <span className="mp-verified" title="Verified Alumni">✓</span>}
                     </div>
                     <p className="mp-headline">
                         {profile.jobTitle
@@ -319,6 +350,53 @@ export const Myprofile = () => {
                                     <span className="mp-about-icon">🏛️</span>
                                     <div><label>University</label><p>GGSIPU</p></div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="mp-about-card">
+                            <h4>Verification Status</h4>
+                            <div className="mp-verification-status">
+                                {profile.isVerified ? (
+                                    <div className="mp-status-verified">
+                                        <span className="mp-status-icon">✅</span>
+                                        <div>
+                                            <strong>Verified Alumni</strong>
+                                            <p>Your status as a GGSIPU alumnus has been verified.</p>
+                                        </div>
+                                    </div>
+                                ) : profile.verificationStatus === 'pending' ? (
+                                    <div className="mp-status-pending">
+                                        <span className="mp-status-icon">⏳</span>
+                                        <div>
+                                            <strong>Verification Pending</strong>
+                                            <p>Our admin team is reviewing your documents.</p>
+                                        </div>
+                                    </div>
+                                ) : profile.verificationStatus === 'rejected' ? (
+                                    <div className="mp-status-rejected">
+                                        <span className="mp-status-icon">❌</span>
+                                        <div>
+                                            <strong>Verification Rejected</strong>
+                                            <p>Your document was not accepted. Please upload a clear ID or degree.</p>
+                                            <label className="mp-verify-upload-btn">
+                                                Re-upload Document
+                                                <input type="file" onChange={handleVerificationUpload} hidden accept="image/*,.pdf" />
+                                            </label>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="mp-status-none">
+                                        <span className="mp-status-icon">🛡️</span>
+                                        <div>
+                                            <strong>Get Verified</strong>
+                                            <p>Upload your college ID or degree to get a verified alumni badge.</p>
+                                            <label className="mp-verify-upload-btn">
+                                                {saving ? 'Uploading...' : 'Upload Document'}
+                                                <input type="file" onChange={handleVerificationUpload} hidden accept="image/*,.pdf" disabled={saving} />
+                                            </label>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

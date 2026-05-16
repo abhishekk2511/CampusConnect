@@ -26,7 +26,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.post("http://localhost:5000/api/getotherprofile", { rollNo });
+        const response = await axios.post("/api/getotherprofile", { rollNo });
         if (response.data.uploads) {
           setProfile(response.data.uploads);
         }
@@ -47,7 +47,7 @@ const Profile = () => {
   }
 
   const imageSrc = profiledata.image 
-    ? `http://localhost:5000/uploads/${profiledata.image}`
+    ? `/uploads/${profiledata.image}`
     : null;
 
   return (
@@ -78,7 +78,12 @@ const Profile = () => {
             </div>
 
             <div className="profile-identity">
-              <h1 className="display-name">{profiledata.name}</h1>
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                <h1 className="display-name">{profiledata.name}</h1>
+                <span className={`mp-role-badge ${profiledata.role}`} style={{padding: '2px 10px', fontSize: '0.7rem'}}>
+                  {profiledata.role === 'alumni' ? '🎓 Alumni' : profiledata.role === 'admin' ? '🛡️ Admin' : '📚 Student'}
+                </span>
+              </div>
               <p className="professional-tagline">
                 {profiledata.jobTitle ? `${profiledata.jobTitle} @ ${profiledata.company}` : `${profiledata.branch} Student`}
               </p>
@@ -170,7 +175,7 @@ const Profile = () => {
                     {post.image && (
                       <div className="post-media-wrap">
                         <img 
-                          src={`http://localhost:5000/uploads/${post.image}`} 
+                          src={`/uploads/${post.image}`} 
                           alt="Post Content" 
                           className="post-media-img" 
                         />

@@ -55,6 +55,7 @@ function App() {
           <Route path="/myprofile" element={<ProtectedRoute><Myprofile /></ProtectedRoute>} />
           <Route path="/upload" element={<ProtectedRoute><UploadForm /></ProtectedRoute>} />
           <Route path="/editprofile/:profileid" element={<ProtectedRoute><Editprofile /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Dashboard forceTab="admin" /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

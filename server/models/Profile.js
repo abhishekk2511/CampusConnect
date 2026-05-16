@@ -45,7 +45,20 @@ const profileSchema= new mongoose.Schema({
                     status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' }
                 }
             ],
-            sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }]
+            sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+            isVerified: {
+                type: Boolean,
+                default: false
+            },
+            verificationStatus: {
+                type: String,
+                enum: ['none', 'pending', 'verified', 'rejected'],
+                default: 'none'
+            },
+            verificationDoc: {
+                type: String,
+                default: null
+            }
 
            
             
