@@ -1,123 +1,64 @@
-# Alumni Relations Student Website
+# CampusConnect — GGSIPU Alumni Relations Platform
 
-## Table of Contents
+CampusConnect is a premium MERN stack application designed to bridge the gap between students and alumni of GGSIPU. It provides a modern networking environment where students can seek guidance, share updates, and visualize the global impact of the university's alumni network.
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Technologies Used](#technologies-used)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Contributing](#contributing)
+## ✨ New Features (Version 1.1)
 
+-   **Interactive Global Alumni Map**: A professional mapping interface (using Leaflet & Carto) to visualize where GGSIPU graduates are working worldwide. Features include region-based statistics, "fly-to" animations, and an interactive alumni list.
+-   **Intelligent Networking Hub**: A redesigned "People You May Know" widget with real-time friend request functionality and "Sent" status feedback.
+-   **Premium Profile Overhaul**: A modern, glassmorphism-inspired "My Profile" page featuring cover banners, real-time activity stats, and a clean tabbed interface for posts and academic/professional information.
+-   **Real-time Notifications**: A refined dropdown system for friend requests and interactions.
+-   **Enhanced UI/UX**: A curated editorial aesthetic using a custom cream, gold, and ink-black palette with high-end typography (Outfit & Inter).
 
-## Introduction
+## 🚀 Core Features
 
-This project is a MERN stack application designed specifically for a college's alumni relations and student interaction. It allows alumni or seniors to guide juniors for placements and future careers. Users can post and interact with posts, including commenting and liking. It provides comprehensive CRUD operations for managing user profiles and posts.
+-   **Seamless Authentication**: Secure JWT-based registration and login flows.
+-   **Dynamic Feed**: Share updates, images, and career milestones with the campus community.
+-   **Social Interactions**: Like, comment, and connect with peers and mentors.
+-   **Profile Customization**: Detailed professional and academic profiling for students and alumni.
 
-## Features
+## 🛠️ Technologies Used
 
-- **User Authentication**: Secure registration and login with proper password hashing and matching.
-- **Profile Management**: Users can create, edit, and delete their profiles.
-- **Posts**: Users can create, edit, and delete posts. All posts are fetched and displayed on the dashboard.
-- **Comments and Likes**: Users can comment on and like posts.
-- **Alumni Guidance**: Alumni can guide juniors on placements and career opportunities through posts and interactions.
-- **Dashboard**: A central dashboard to view all posts and interactions.
+-   **Frontend**: React.js, Axios, Leaflet (Mapping), Moment.js
+-   **Backend**: Node.js, Express.js, JWT
+-   **Database**: MongoDB
+-   **Styling**: Vanilla CSS (Premium Editorial Design System)
 
-## Technologies Used
+## 📦 Installation
 
-- **Frontend**: React.js
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB
-- **Authentication**:bcrypt for password hashing 
-
-## Usage
-
-1. **Register and Login**: Users can register with their email and password. Upon successful registration, users can log in to access the application.
-2. **Profile Management**: Users can set up their profile with personal information, which can be edited or deleted later.
-3. **Posting**: Users can create new posts, edit or delete their posts.
-4. **Interaction**: Users can comment on and like posts to interact with others.
-5. **Dashboard**: View all posts and interactions in a centralized dashboard.
-
-## Installation
-
-To run this project locally, follow these steps:
-
-1. **Clone the repository**:
-
+1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/your-username/alumni-relations-student-website.git
-    cd alumni-relations-student-website
+    git clone https://github.com/abhishekk2511/CampusConnect.git
+    cd CampusConnect
     ```
 
-2. **Install dependencies** for both frontend and backend:
-
+2.  **Install dependencies**:
     ```bash
-    # For backend
-    cd backend
+    # Root directory (frontend)
     npm install
 
-    # For frontend
-    cd ../frontend
+    # Server directory
+    cd server
     npm install
     ```
 
-3. **Set up environment variables**:
-
-    Create a `.env` file in the `backend` directory with the following content:
-
-    ```env
-    MONGO_URI=your_mongo_database_uri
-
-    ```
-
-4. **Run the application**:
-
+3.  **Run the application**:
     ```bash
-    # For backend
-    cd backend
+    # Start Backend (from server folder)
     npm start
 
-    # For frontend
-    cd ../frontend
+    # Start Frontend (from root folder)
     npm start
     ```
 
-    The backend will be running on `http://localhost:5000` and the frontend on `http://localhost:3000`.
+    The app will be live at `http://localhost:3000`.
 
-## API Endpoints
+## 🤝 Contributing
 
-### Authentication
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login a user
-
-### User Profile
-
-- `GET /api/users/:id` - Get user profile by ID
-- `PUT /api/users/:id` - Update user profile
-- `DELETE /api/users/:id` - Delete user profile
-
-### Posts
-
-- `GET /api/posts` - Get all posts
-- `POST /api/posts` - Create a new post
-- `GET /api/posts/:id` - Get post by ID
-- `PUT /api/posts/:id` - Update post by ID
-- `DELETE /api/posts/:id` - Delete post by ID
-
-### Comments
-
-- `POST /api/posts/:id/comments` - Add a comment to a post
-- `DELETE /api/posts/:postId/comments/:commentId` - Delete a comment
-
-### Likes
-
-- `POST /api/posts/:id/likes` - Like a post
-- `DELETE /api/posts/:id/likes` - Unlike a post
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and create a pull request with your changes. Make sure to update tests as appropriate.
-
-
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
