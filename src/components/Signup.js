@@ -17,9 +17,29 @@ const Signup = () => {
   const [setimage, setImage] = useState(null);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otp, setOtp] = useState('');
 
-  const handlesignup = async (e) => {
+  const requestOtp = async (e) => {
     e.preventDefault();
+    if (!rollNo || !password || !name || !email || !year || !branch) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.post("http://localhost:5000/api/send-otp", { email });
+      setShowOtpModal(true);
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to send OTP. Please check your email address.";
+      alert(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyAndSignup = async () => {
+    if (!otp || otp.length < 6) return alert("Please enter the 6-digit OTP");
     setLoading(true);
     try {
       const formData = new FormData();
@@ -35,6 +55,7 @@ const Signup = () => {
       if (setimage) {
         formData.append('image', setimage);
       }
+      formData.append('otp', otp);
 
       await axios.post("http://localhost:5000/api/signup", formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -110,7 +131,7 @@ const Signup = () => {
             <p>Fill in the details below to get started.</p>
           </div>
 
-          <form onSubmit={handlesignup} className="signup-form" noValidate>
+          <form onSubmit={requestOtp} className="signup-form" noValidate>
 
             {/* Role Selector */}
             <div className="field-group">
@@ -229,12 +250,8 @@ const Signup = () => {
               </div>
             </div>
 
-            <button
-              type="submit"
-              className={`submit-btn ${loading ? 'loading' : ''}`}
-              disabled={loading}
-            >
-              {loading ? <span className="spinner"></span> : 'Create Account →'}
+            <button type="submit" className="signup-submit-btn" disabled={loading} onClick={requestOtp}>
+              {loading ? "Sending OTP..." : "Create Account"}
             </button>
 
           </form>
@@ -255,6 +272,43 @@ const Signup = () => {
 
         </div>
       </div>
+
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div className="otp-modal-overlay">
+          <div className="otp-modal">
+            <h3>Email Verification</h3>
+            <p>We've sent a 6-digit OTP to <strong>{email}</strong>.</p>
+            <p className="otp-note">Check your console/terminal if SMTP is not configured.</p>
+            
+            <input 
+              type="text" 
+              maxLength="6"
+              placeholder="Enter 6-digit OTP" 
+              value={otp} 
+              onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))} 
+              className="otp-input"
+            />
+            
+            <div className="otp-actions">
+              <button 
+                className="otp-cancel-btn" 
+                onClick={() => { setShowOtpModal(false); setOtp(''); }}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button 
+                className="otp-verify-btn" 
+                onClick={verifyAndSignup}
+                disabled={loading || otp.length !== 6}
+              >
+                {loading ? "Verifying..." : "Verify & Sign Up"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

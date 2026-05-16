@@ -4,7 +4,7 @@ const multer = require("multer");
 const path = require("path");
 
 // Controllers
-const { rolesignup, rolesignin } = require("../controllers/rolesignup");
+const { rolesignup, rolesignin, sendOTP } = require("../controllers/rolesignup");
 const { uploadImage, getAllUploads, getmyUploads, getPostById, addComment, likePost } = require("../controllers/upload");
 const { setprofile, getprofile, editprofile, getotherprofile } = require("../controllers/setprofile");
 const { messages } = require("../controllers/messages");
@@ -30,6 +30,7 @@ const upload = multer({ storage });
 // ================= ROUTES =================
 
 // Auth Routes (MongoDB based)
+router.post("/api/send-otp", sendOTP);
 router.post("/api/signup", upload.single("image"), rolesignup);
 router.post("/api/signin", rolesignin);
 

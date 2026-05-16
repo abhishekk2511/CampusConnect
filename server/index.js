@@ -7,6 +7,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const multer = require("multer");
+const http = require("http");
+const { Server } = require("socket.io");
 
 app.use(express.json());
 app.use(bodyParser.json());
@@ -40,6 +42,23 @@ const userroutes = require("./routes/route");
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/", userroutes);
 
-app.listen(PORT, () => {
+// Socket.io Setup
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: corsoptions
+});
+
+// Make io accessible to our router and controllers
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log('A user connected via WebSocket:', socket.id);
+  
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

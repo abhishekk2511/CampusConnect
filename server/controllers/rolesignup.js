@@ -3,6 +3,56 @@ const Rolesignup = require("../models/rolesignup");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const cookie = require("cookie-parser");
+const OTP = require("../models/OTP");
+const nodemailer = require("nodemailer");
+
+// Create a nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || 'your-email@gmail.com', // Need to set in .env
+    pass: process.env.EMAIL_PASS || 'your-app-password'     // Need to set in .env
+  }
+});
+
+exports.sendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Save to DB (will expire in 5 mins due to TTL schema)
+    await OTP.deleteMany({ email }); // Delete old OTPs for this email
+    await OTP.create({ email, otp });
+
+    // Send email
+    const mailOptions = {
+      from: process.env.EMAIL_USER || 'campusconnect@example.com',
+      to: email,
+      subject: 'CampusConnect - Email Verification OTP',
+      html: `<h2>Your OTP for CampusConnect</h2>
+             <p>Your OTP for email verification is: <strong>${otp}</strong></p>
+             <p>This OTP is valid for 5 minutes.</p>`
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`OTP sent to ${email}: ${otp}`); // For dev purposes
+      res.status(200).json({ message: "OTP sent successfully" });
+    } catch (mailError) {
+      console.error("Nodemailer error:", mailError);
+      // Fallback: If SMTP fails (not configured), we still log it so dev can test
+      console.log(`\n=== ⚠️ SMTP NOT CONFIGURED ===\nBut your OTP is: ${otp}\n==============================\n`);
+      res.status(200).json({ message: "OTP generated (Check server console if email fails)" });
+    }
+  } catch (error) {
+    console.error("OTP generation error:", error);
+    res.status(500).json({ message: "Failed to generate OTP" });
+  }
+};
+
 exports.rolesignup = async (req, res) => {
   let registerstudent = null;
   try {
@@ -17,11 +67,18 @@ exports.rolesignup = async (req, res) => {
     const email = req.body.email;
     const company = req.body.company || "";
     const jobTitle = req.body.jobTitle || "";
+    const otp = req.body.otp;
     const image = req.file ? req.file.filename : "default.png";
 
     // Validate required fields
-    if (!rollNo || !password || !name || !email || !year || !branch) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!rollNo || !password || !name || !email || !year || !branch || !otp) {
+      return res.status(400).json({ message: "All fields and OTP are required" });
+    }
+
+    // Verify OTP
+    const validOtp = await OTP.findOne({ email, otp });
+    if (!validOtp) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
     const existingUser = await Rolesignup.findOne({ rollNo });
@@ -49,6 +106,9 @@ exports.rolesignup = async (req, res) => {
       company,
       jobTitle
     });
+
+    // Delete the used OTP
+    await OTP.deleteOne({ email });
 
     res.status(200).json({ message: "Account created successfully!" });
 
