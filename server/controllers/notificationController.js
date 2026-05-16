@@ -3,9 +3,14 @@ const Profile = require('../models/Profile');
 const jwt = require('jsonwebtoken');
 
 const getMyProfile = async (token) => {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    const rollNo = decoded.rollNo;
-    return await Profile.findOne({ $or: [{ rollNo }, { rollNo: String(rollNo) }] });
+    try {
+        if (!token) return null;
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const rollNo = decoded.rollNo;
+        return await Profile.findOne({ $or: [{ rollNo }, { rollNo: String(rollNo) }] });
+    } catch (e) {
+        return null;
+    }
 };
 
 exports.getNotifications = async (req, res) => {

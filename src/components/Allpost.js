@@ -43,6 +43,10 @@ const Allpost = () => {
       setUploads(prev => prev.map(p => p._id === updatedPost._id ? updatedPost : p));
     });
 
+    socket.on('postDeleted', (deletedPostId) => {
+      setUploads(prev => prev.filter(p => p._id !== deletedPostId));
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -106,6 +110,20 @@ const Allpost = () => {
     }
   };
 
+  const handleDelete = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      // Optimistic update
+      setUploads(uploads.filter(post => post._id !== postId));
+      
+      await axios.post(`http://localhost:5000/api/posts/${postId}/delete`, { token });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert("Failed to delete post.");
+      fetchUploads(); // Revert on failure
+    }
+  };
+
   return (
     <div className="allpost-container">
       {uploads.length === 0 ? (
@@ -119,10 +137,31 @@ const Allpost = () => {
 
             return (
               <li key={upload._id} className="allpost-item">
-                <Link to={`/getprofile/${upload.rollNo}`} className="allpost-profile-link">
-                  <span className="allpost-name">{upload.name}</span>
-                  <span className="allpost-timestamp">{moment(upload.createdAt).fromNow()}</span>
-                </Link>
+                <div className="allpost-header">
+                  <Link to={`/getprofile/${upload.rollNo}`} className="allpost-profile-link">
+                    <div className="allpost-avatar">
+                      {upload.authorImage ? (
+                        <img src={`http://localhost:5000/uploads/${upload.authorImage}`} alt="" />
+                      ) : (
+                        upload.name?.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="allpost-name-meta">
+                      <span className="allpost-name">{upload.name}</span>
+                      <span className="allpost-timestamp">{moment(upload.createdAt).fromNow()}</span>
+                    </div>
+                  </Link>
+                  
+                  {currentRollNo === upload.rollNo && (
+                    <button 
+                      className="allpost-delete-btn" 
+                      onClick={() => handleDelete(upload._id)}
+                      title="Delete Post"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
                 
                 <div className="allpost-content">
                   <p>

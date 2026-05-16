@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Profile = require('../models/Profile');
 const uploadpost=require('../models/upload');
+const Rolesignup = require('../models/rolesignup');
 
 exports.setprofile = async (req, res) => {
     try {
@@ -29,6 +30,11 @@ exports.setprofile = async (req, res) => {
       );
 
       res.status(200).json({ message: "success", profile });
+
+      // Update name in all posts by this user
+      if (name) {
+        await uploadpost.updateMany({ rollNo }, { name: name });
+      }
     } catch (error) {
       console.log(error);
       res.status(400).json({ message: "error during setprofile", error: error.message });
@@ -57,9 +63,12 @@ try{
       $or: [{ rollNo: rollNo }, { rollNo: String(rollNo) }] 
     }).sort({ _id: -1 });
     
-    // Merge posts into the response object
+    // Merge posts and role into the response object
     const profileData = profile.toObject();
     profileData.posts = posts;
+    
+    const userAuth = await Rolesignup.findOne({ rollNo });
+    profileData.role = userAuth ? userAuth.role : "student";
 
     res.status(200).json({message:"suceess", uploads: profileData});
 }
@@ -89,6 +98,9 @@ exports.getotherprofile=async(req,res)=>{
 
       const profileData = profile.toObject();
       profileData.posts = posts;
+      
+      const userAuth = await Rolesignup.findOne({ rollNo });
+      profileData.role = userAuth ? userAuth.role : "student";
 
       res.status(200).json({message:"suceess", uploads: profileData});
   }
@@ -129,6 +141,11 @@ exports.editprofile = async (req, res) => {
             message: "Profile updated successfully",
             profile: updatedProfile
         });
+
+        // Update name in all posts by this user
+        if (name) {
+            await uploadpost.updateMany({ rollNo: rollNo }, { name: name });
+        }
 
     } catch (err) {
         console.error('Error updating profile:', err);

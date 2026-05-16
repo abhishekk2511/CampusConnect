@@ -45,7 +45,7 @@ const ResumeAnalyzer = () => {
     formData.append('resume', file);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/analyze-resume', formData, {
+      const response = await axios.post('/api/analyze-resume', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

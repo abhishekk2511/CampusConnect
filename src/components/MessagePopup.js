@@ -25,7 +25,7 @@ const MessagePopup = ({ isOpen, onClose }) => {
   const handleSendClick = () => {
     const sendmessage = async () => {
       try {
-        await axios.post('http://localhost:5000/api/message', { rollNo, name, id, email, branch, description });
+        await axios.post('/api/message', { rollNo, name, id, email, branch, description });
         alert("message sent");
       } catch(err) {
         console.log(err);

@@ -36,9 +36,16 @@ exports.searchPeople = async (req, res) => {
 
         const people = await Profile.find({
             $or: searchConditions
-        }).limit(10);
+        }).limit(20);
+        
+        // Return branch and company info as well
+        const peopleWithMeta = people.map(p => ({
+            ...p.toObject(),
+            meta: `${p.branch} ${p.year ? `· ${p.year}` : ''}`
+        }));
+
         console.log("Found:", people.length, "people");
-        res.status(200).json(people);
+        res.status(200).json(peopleWithMeta);
     } catch (error) {
         console.error("Search error:", error);
         res.status(500).json({ message: "Search failed" });
@@ -180,9 +187,33 @@ exports.getSuggestions = async (req, res) => {
             return res.status(200).json([]);
         }
 
-        const suggestions = await Profile.find({
-            _id: { $nin: excludeIds }
-        }).limit(8);
+        // SMART SUGGESTIONS:
+        // 1. Same branch (High priority)
+        // 2. Same year (Medium priority)
+        // 3. Others
+        
+        let query = { _id: { $nin: excludeIds } };
+        
+        // Priority 1: Same branch
+        let branchQuery = { ...query, branch: myProfile.branch };
+        let sameBranch = await Profile.find(branchQuery).limit(5);
+        
+        // Priority 2: Same year (but different branch)
+        let sameYearQuery = { 
+            ...query, 
+            year: myProfile.year, 
+            _id: { $nin: [...excludeIds, ...sameBranch.map(s => s._id)] } 
+        };
+        let sameYear = await Profile.find(sameYearQuery).limit(3);
+        
+        // Priority 3: Random others
+        let othersQuery = {
+            ...query,
+            _id: { $nin: [...excludeIds, ...sameBranch.map(s => s._id), ...sameYear.map(s => s._id)] }
+        };
+        let others = await Profile.find(othersQuery).limit(5);
+
+        const suggestions = [...sameBranch, ...sameYear, ...others];
 
         res.status(200).json(suggestions);
     } catch (error) {

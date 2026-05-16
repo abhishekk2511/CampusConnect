@@ -12,6 +12,9 @@ import AlumniBadges from "./AlumniBadges";
 import LiveMentoring from "./LiveMentoring";
 import FriendSystem from "./FriendSystem";
 import Chatbot from "./Chatbot";
+import AdminDashboard from "./AdminDashboard";
+import PollWidget from "./PollWidget";
+import CreatePoll from "./CreatePoll";
 import axios from "axios";
 import "./Dashboard.css";
 
@@ -172,25 +175,27 @@ const PostCard = ({ post }) => {
 /* ─────────────────────────────────────────
    MAIN DASHBOARD COMPONENT
 ───────────────────────────────────────── */
-const Dashboard = () => {
+const Dashboard = ({ forceTab }) => {
   const navigate = useNavigate();
   const storedToken = localStorage.getItem("token");
   const [token] = useState(storedToken || "");
   const [profileData, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("feed");
+  const [activeTab, setActiveTab] = useState(forceTab || "feed");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [selectedFriend, setSelectedFriend] = useState(null); // ← New state
-  const [notifications, setNotifications] = useState([]); // ← Real notifications
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
+  const [polls, setPolls] = useState([]);
+  const [notifications, setNotifications] = useState([]); 
   const [unreadCount, setUnreadCount] = useState(0);
   const [suggestions, setSuggestions] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
-  const [connectingTo, setConnectingTo] = useState(null); // tracks which button is loading
+  const [connectingTo, setConnectingTo] = useState(null); 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -198,7 +203,6 @@ const Dashboard = () => {
       return;
     }
 
-    // First, try to load profile from localStorage (fast)
     const infoStore = localStorage.getItem("Info");
     if (infoStore) {
       try {
@@ -211,7 +215,6 @@ const Dashboard = () => {
       } catch (e) {}
     }
 
-    // Otherwise, fetch from backend
     const fetchProfile = async () => {
       try {
         const response = await axios.post(
@@ -225,12 +228,15 @@ const Dashboard = () => {
             rollNo: String(data.rollNo),
             branch: data.branch,
             email: data.email,
-            image: data.image, // ← Added image
+            image: data.image,
+            isVerified: data.isVerified,
+            verificationStatus: data.verificationStatus,
+            role: data.role || "student"
           };
           localStorage.setItem("Info", JSON.stringify(obj));
+          localStorage.setItem("role", data.role || "student");
           setProfile(obj);
         } else {
-          // No profile set yet — will trigger profile setup screen
           setProfile(null);
         }
       } catch (error) {
@@ -242,14 +248,25 @@ const Dashboard = () => {
     };
 
     fetchProfile();
+    fetchPolls();
   }, [token, navigate]);
 
-  // ── Fetch Notifications ──
+  const fetchPolls = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/polls');
+      setPolls(res.data);
+    } catch (error) {
+      console.error("Error fetching polls:", error);
+    }
+  };
+
   const fetchNotifications = async () => {
     try {
       const res = await axios.post("http://localhost:5000/api/notifications/get", { token });
-      setNotifications(res.data);
-      setUnreadCount(res.data.filter(n => !n.read).length);
+      if (Array.isArray(res.data)) {
+        setNotifications(res.data);
+        setUnreadCount(res.data.filter(n => !n.read).length);
+      }
     } catch (e) {
       console.log("Notif fetch error");
     }
@@ -274,15 +291,12 @@ const Dashboard = () => {
     }
   };
 
-  // Pre-load already-sent request IDs from profile data
   const loadSentRequests = async () => {
     try {
       const res = await axios.post("http://localhost:5000/api/getprofile", { token });
       const sentIds = (res.data?.uploads?.sentRequests || []).map(id => String(id));
       if (sentIds.length) setSentRequests(prev => [...new Set([...prev, ...sentIds])]);
-    } catch (e) {
-      // Silent — not critical
-    }
+    } catch (e) {}
   };
 
   const handleSendRequest = async (rollNo) => {
@@ -337,7 +351,7 @@ const Dashboard = () => {
   const uploadHandler = () => navigate("/upload");
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("Info"); // ← Clear this user's profile
+    localStorage.removeItem("Info"); 
     navigate("/signin");
   };
   const home = () => navigate("/");
@@ -349,7 +363,6 @@ const Dashboard = () => {
     document.documentElement.setAttribute("data-theme", newTheme);
   };
 
-  /* ── Loading ── */
   if (loading) {
     return (
       <div className="db-loading">
@@ -361,7 +374,6 @@ const Dashboard = () => {
     );
   }
 
-  /* ── No profile → Setprofile ── */
  if (!profileData || !profileData.name) {
     return (
       <div className="db-setup-wrap">
@@ -373,7 +385,6 @@ const Dashboard = () => {
     );
   }
 
-  /* ── Filter posts by tab ── */
   const visiblePosts =
     activeTab === "alumni"
       ? MOCK_POSTS.filter((p) => p.role === "alumni")
@@ -381,14 +392,10 @@ const Dashboard = () => {
       ? MOCK_POSTS.filter((p) => p.role === "student")
       : MOCK_POSTS;
 
-  /* ── Main Dashboard ── */
   return (
     <div className="db-root">
-
-      {/* ════ NAVBAR ════ */}
       <header className="db-navbar">
         <Link to="/" className="db-logo">Campus<span>Connect</span></Link>
-
         <div className="db-search">
           <span className="db-search-icon">🔍</span>
           <input 
@@ -399,7 +406,6 @@ const Dashboard = () => {
             onBlur={() => setTimeout(() => setShowSearch(false), 200)}
             onFocus={() => searchQuery.length > 1 && setShowSearch(true)}
           />
-          
           {showSearch && searchResults.length > 0 && (
             <div className="db-search-dropdown">
               {searchResults.map(user => (
@@ -416,7 +422,6 @@ const Dashboard = () => {
             </div>
           )}
         </div>
-
         <div className="db-nav-actions">
           <button className="db-nav-icon-btn" onClick={uploadHandler} title="Upload Post">
             <span>＋</span>
@@ -438,7 +443,6 @@ const Dashboard = () => {
               🔔
               {unreadCount > 0 && <span className="db-notif-badge">{unreadCount}</span>}
             </button>
-
             {showNotifications && (
               <div className="db-notif-dropdown">
                 <div className="notif-header">
@@ -482,12 +486,8 @@ const Dashboard = () => {
           </div>
         </div>
       </header>
-
       <div className="db-body">
-
-        {/* ════ LEFT SIDEBAR ════ */}
         <aside className={`db-sidebar ${sidebarOpen ? "open" : ""}`}>
-
           <div className="db-profile-card">
             <div className="db-avatar-large">
               {profileData.image ? (
@@ -504,69 +504,38 @@ const Dashboard = () => {
             <p className="db-profile-roll">#{profileData.rollNo}</p>
             <Link to="/myprofile" className="db-view-profile-btn">View Full Profile</Link>
           </div>
-
           <nav className="db-sidenav">
-            <button
-              className={`db-sidenav-item ${activeTab === "feed" ? "active" : ""}`}
-              onClick={() => { setActiveTab("feed"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "feed" ? "active" : ""}`} onClick={() => { setActiveTab("feed"); setSidebarOpen(false); }}>
               <span className="nav-icon">🏠</span><span>Campus Feed</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "network" ? "active" : ""}`}
-              onClick={() => { setActiveTab("network"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "network" ? "active" : ""}`} onClick={() => { setActiveTab("network"); setSidebarOpen(false); }}>
               <span className="nav-icon">🤝</span><span>Networking Hub</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "messages" ? "active" : ""}`}
-              onClick={() => { setActiveTab("messages"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "messages" ? "active" : ""}`} onClick={() => { setActiveTab("messages"); setSidebarOpen(false); }}>
               <span className="nav-icon">💬</span><span>Messages</span>
             </button>
             <Link to="/myprofile" className="db-sidenav-item">
               <span className="nav-icon">👤</span><span>My Profile</span>
             </Link>
-            <button
-              className={`db-sidenav-item ${activeTab === "resume" ? "active" : ""}`}
-              onClick={() => { setActiveTab("resume"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "resume" ? "active" : ""}`} onClick={() => { setActiveTab("resume"); setSidebarOpen(false); }}>
               <span className="nav-icon">📄</span><span>Resume Analyzer</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "jobs" ? "active" : ""}`}
-              onClick={() => { setActiveTab("jobs"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "jobs" ? "active" : ""}`} onClick={() => { setActiveTab("jobs"); setSidebarOpen(false); }}>
               <span className="nav-icon">💼</span><span>Job Board</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "map" ? "active" : ""}`}
-              onClick={() => { setActiveTab("map"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "map" ? "active" : ""}`} onClick={() => { setActiveTab("map"); setSidebarOpen(false); }}>
               <span className="nav-icon">🌍</span><span>Global Map</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "referrals" ? "active" : ""}`}
-              onClick={() => { setActiveTab("referrals"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "referrals" ? "active" : ""}`} onClick={() => { setActiveTab("referrals"); setSidebarOpen(false); }}>
               <span className="nav-icon">🤝</span><span>Referrals</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "stories" ? "active" : ""}`}
-              onClick={() => { setActiveTab("stories"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "stories" ? "active" : ""}`} onClick={() => { setActiveTab("stories"); setSidebarOpen(false); }}>
               <span className="nav-icon">📖</span><span>Success Stories</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "badges" ? "active" : ""}`}
-              onClick={() => { setActiveTab("badges"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "badges" ? "active" : ""}`} onClick={() => { setActiveTab("badges"); setSidebarOpen(false); }}>
               <span className="nav-icon">🏆</span><span>Leaderboard</span>
             </button>
-            <button
-              className={`db-sidenav-item ${activeTab === "mentoring" ? "active" : ""}`}
-              onClick={() => { setActiveTab("mentoring"); setSidebarOpen(false); }}
-            >
+            <button className={`db-sidenav-item ${activeTab === "mentoring" ? "active" : ""}`} onClick={() => { setActiveTab("mentoring"); setSidebarOpen(false); }}>
               <span className="nav-icon">🎙️</span><span>Live Mentoring</span>
             </button>
             <button className="db-sidenav-item" onClick={uploadHandler}>
@@ -575,8 +544,16 @@ const Dashboard = () => {
             <button className="db-sidenav-item" onClick={home}>
               <span className="nav-icon">🌐</span><span>Home Page</span>
             </button>
+            {localStorage.getItem("role") === "admin" && (
+              <button
+                className={`db-sidenav-item ${activeTab === "admin" ? "active" : ""}`}
+                onClick={() => { setActiveTab("admin"); setSidebarOpen(false); }}
+                style={{ background: activeTab === "admin" ? "rgba(239, 68, 68, 0.1)" : "", borderLeft: activeTab === "admin" ? "4px solid #ef4444" : "" }}
+              >
+                <span className="nav-icon">🛡️</span><span style={{ color: "#ef4444", fontWeight: "bold" }}>Admin Hub</span>
+              </button>
+            )}
           </nav>
-
           <div className="db-sidebar-stats">
             <div className="db-stat">
               <span className="db-stat-num">500+</span>
@@ -587,12 +564,8 @@ const Dashboard = () => {
               <span className="db-stat-label">Students</span>
             </div>
           </div>
-
           <button className="db-logout-btn" onClick={logout}>🚪 Logout</button>
-
         </aside>
-
-        {/* ════ MAIN CONTENT ════ */}
         {activeTab === "messages" ? (
           <Messages selectedFriend={selectedFriend} />
         ) : activeTab === "resume" ? (
@@ -611,20 +584,21 @@ const Dashboard = () => {
           <AlumniBadges />
         ) : activeTab === "mentoring" ? (
           <LiveMentoring />
+        ) : activeTab === "admin" ? (
+          <AdminDashboard />
         ) : (
           <main className="db-main">
-
-            {/* Tabs bar */}
             <div className="db-feed-header">
               <div className="db-feed-tabs">
                 <button className={`db-tab ${activeTab === "feed" ? "active" : ""}`} onClick={() => setActiveTab("feed")}>🏠 All Posts</button>
                 <button className={`db-tab ${activeTab === "alumni" ? "active" : ""}`} onClick={() => setActiveTab("alumni")}>🎓 Alumni</button>
                 <button className={`db-tab ${activeTab === "students" ? "active" : ""}`} onClick={() => setActiveTab("students")}>📚 Students</button>
               </div>
-              <button className="db-quick-upload" onClick={uploadHandler}>＋ New Post</button>
+              <div style={{display: 'flex', gap: '10px'}}>
+                <button className="db-quick-upload" style={{background: '#10b981'}} onClick={() => setShowCreatePoll(true)}>📊 Create Poll</button>
+                <button className="db-quick-upload" onClick={uploadHandler}>＋ New Post</button>
+              </div>
             </div>
-
-            {/* Welcome banner */}
             {activeTab === "feed" && (
               <div className="db-welcome-banner">
                 <div className="db-welcome-text">
@@ -635,28 +609,43 @@ const Dashboard = () => {
                 <div className="db-welcome-art">🎓</div>
               </div>
             )}
-
-            {/* Real posts from backend — rendered FIRST so new uploads appear at top */}
+            {polls.length > 0 && activeTab === "feed" && (
+              <div className="db-polls-wrap" style={{marginBottom: '30px'}}>
+                <p className="db-section-divider">— Trending Campus Polls —</p>
+                {polls.map(poll => (
+                  <PollWidget 
+                    key={poll._id} 
+                    poll={poll} 
+                    onVote={(updatedPoll) => {
+                      setPolls(polls.map(p => p._id === updatedPoll._id ? updatedPoll : p));
+                    }} 
+                  />
+                ))}
+              </div>
+            )}
             <div className="db-posts-wrap db-real-posts">
               <p className="db-section-divider">— Your latest posts from the network —</p>
               <Allpost />
             </div>
-
-            {/* Community sample posts below */}
             <div className="db-posts-feed">
               <p className="db-section-divider">— Community highlights —</p>
               {visiblePosts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
-
+            {showCreatePoll && (
+              <CreatePoll 
+                onClose={() => setShowCreatePoll(false)} 
+                onPollCreated={(newPoll) => {
+                  setPolls([newPoll, ...polls]);
+                  setShowCreatePoll(false);
+                }}
+              />
+            )}
           </main>
         )}
-
-        {/* ════ RIGHT PANEL ════ */}
         {(activeTab !== "messages" && activeTab !== "resume" && activeTab !== "jobs" && activeTab !== "map" && activeTab !== "referrals" && activeTab !== "stories" && activeTab !== "badges" && activeTab !== "mentoring") && (
           <aside className="db-right-panel">
-
             <div className="db-widget">
               <h4 className="db-widget-title">Quick Actions</h4>
               <button className="db-action-btn" onClick={uploadHandler}>📤 <span>Upload a Post</span></button>
@@ -667,15 +656,13 @@ const Dashboard = () => {
               </button>
               <button className="db-action-btn" onClick={home}>🌐 <span>Visit Home Page</span></button>
             </div>
-
-            {/* Real Suggestions Widget */}
             <div className="db-widget">
               <h4 className="db-widget-title">🤝 People You May Know</h4>
               {suggestions.length === 0 ? (
                 <p className="db-empty-msg">No suggestions yet</p>
               ) : (
-                suggestions.map((user) => (
-                  <div key={user.rollNo} className="db-mentor-row">
+                suggestions.map((user, idx) => (
+                  <div className="db-mentor-row" key={user.rollNo || idx}>
                     <Link to={`/getprofile/${user.rollNo}`} className="db-mentor-clickable">
                       <div className="db-mentor-avatar">
                         {user.image ? (

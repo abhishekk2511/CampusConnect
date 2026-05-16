@@ -5,7 +5,7 @@ const path = require("path");
 
 // Controllers
 const { rolesignup, rolesignin, sendOTP } = require("../controllers/rolesignup");
-const { uploadImage, getAllUploads, getmyUploads, getPostById, addComment, likePost } = require("../controllers/upload");
+const { uploadImage, getAllUploads, getmyUploads, getPostById, addComment, likePost, deletePost } = require("../controllers/upload");
 const { setprofile, getprofile, editprofile, getotherprofile } = require("../controllers/setprofile");
 const { messages } = require("../controllers/messages");
 const { myprofile } = require("../controllers/myprofile");
@@ -14,6 +14,8 @@ const { createJob, getAllJobs } = require("../controllers/jobController");
 const { getAlumniLocations } = require("../controllers/mapController");
 const { createReferral, getReferrals, updateReferralStatus } = require("../controllers/referralController");
 const { handleChat } = require("../controllers/chatController");
+const adminCtrl = require("../controllers/adminController");
+const pollCtrl = require("../controllers/pollController");
 
 // ================= FILE STORAGE =================
 const storage = multer.diskStorage({
@@ -50,6 +52,7 @@ router.post("/api/myuploads", getmyUploads);
 router.get("/api/posts/:postId", getPostById);
 router.post("/api/comments", addComment);
 router.post("/api/posts/:id/likes", likePost);
+router.post("/api/posts/:postId/delete", deletePost);
 
 // Messages Route
 router.post("/api/message", messages);
@@ -89,5 +92,15 @@ const notifCtrl = require("../controllers/notificationController");
 router.post("/api/notifications/get", notifCtrl.getNotifications);
 router.post("/api/notifications/mark-read", notifCtrl.markAsRead);
 router.post("/api/notifications/mark-all-read", notifCtrl.markAllAsRead);
+
+// Admin & Verification Routes
+router.post("/api/verify/request", upload.single("doc"), adminCtrl.requestVerification);
+router.get("/api/admin/pending", adminCtrl.getPendingVerifications);
+router.post("/api/admin/handle-verify", adminCtrl.handleVerification);
+
+// Poll Routes
+router.post("/api/polls", pollCtrl.createPoll);
+router.get("/api/polls", pollCtrl.getAllPolls);
+router.post("/api/polls/vote", pollCtrl.votePoll);
 
 module.exports = router;

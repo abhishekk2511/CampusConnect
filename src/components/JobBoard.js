@@ -59,24 +59,38 @@ const JobBoard = () => {
     resumeLink: ''
   });
 
+  const [filters, setFilters] = useState({
+    search: '',
+    location: '',
+    type: 'All'
+  });
+
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/jobs');
-      // If DB has jobs, show them + mock ones; otherwise just mock
+      const { search, location, type } = filters;
+      let url = 'http://localhost:5000/api/jobs?';
+      if (search) url += `search=${search}&`;
+      if (location) url += `location=${location}&`;
+      if (type && type !== 'All') url += `type=${type}&`;
+
+      const res = await axios.get(url);
       const realJobs = res.data || [];
       setJobs(realJobs.length > 0 ? [...realJobs, ...mockJobsData] : mockJobsData);
     } catch (error) {
       console.error("Jobs API failed, using mock data:", error);
-      setJobs(mockJobsData); // Fallback to mock data
+      setJobs(mockJobsData);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchJobs();
+    }, 500); // Debounce search
+    return () => clearTimeout(timer);
+  }, [filters]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -158,10 +172,44 @@ const JobBoard = () => {
   return (
     <div className="job-board-container">
       <div className="job-board-header">
-        <h2>Job & Internship Board</h2>
+        <div>
+          <h2>Job & Internship Board</h2>
+          <p className="job-subtitle">Discover opportunities shared by your alumni network</p>
+        </div>
         <button className="post-job-btn" onClick={() => setShowModal(true)}>
           <span>＋</span> Post a Job
         </button>
+      </div>
+
+      <div className="job-filters-bar">
+        <div className="filter-input-wrap">
+          <span className="filter-icon">🔍</span>
+          <input 
+            type="text" 
+            placeholder="Search title or company..." 
+            value={filters.search}
+            onChange={(e) => setFilters({...filters, search: e.target.value})}
+          />
+        </div>
+        <div className="filter-input-wrap">
+          <span className="filter-icon">📍</span>
+          <input 
+            type="text" 
+            placeholder="Location..." 
+            value={filters.location}
+            onChange={(e) => setFilters({...filters, location: e.target.value})}
+          />
+        </div>
+        <select 
+          className="filter-select"
+          value={filters.type}
+          onChange={(e) => setFilters({...filters, type: e.target.value})}
+        >
+          <option value="All">All Types</option>
+          <option value="Full-time">Full-time</option>
+          <option value="Internship">Internship</option>
+          <option value="Contract">Contract</option>
+        </select>
       </div>
 
       {loading ? (

@@ -33,7 +33,7 @@ const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/chat', { message: userMsg });
+      const res = await axios.post('/api/chat', { message: userMsg });
       setMessages(prev => [...prev, { sender: 'bot', text: res.data.response }]);
     } catch (error) {
       console.error("Chat error:", error);

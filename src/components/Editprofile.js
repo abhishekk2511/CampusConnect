@@ -32,7 +32,7 @@ const ProfileEdit = () => {
 
     try {
       console.log(profile);
-      const response = await axios.post(`http://localhost:5000/api/editprofile`, profile);
+      const response = await axios.post(`/api/editprofile`, profile);
       console.log('Profile updated:', response.data);
       // Optionally redirect or show success message
     } catch (error) {

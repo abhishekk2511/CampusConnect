@@ -9,7 +9,7 @@ const App = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
-      const response = await axios.get(`http://localhost:5000/api/posts/${postId}`);
+      const response = await axios.get(`/api/posts/${postId}`);
       setPost(response.data);
     };
 
@@ -18,7 +18,7 @@ const App = () => {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    const response = await axios.post('http://localhost:5000/api/comments', {
+    const response = await axios.post('/api/comments', {
       content: comment,
       author: 'Anonymous', // Replace with actual author name
       postId: postId,

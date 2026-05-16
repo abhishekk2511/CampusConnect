@@ -1,0 +1,133 @@
+.cp-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.cp-modal {
+    background: white;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.cp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.cp-header h3 {
+    font-size: 1.5rem;
+    color: #111827;
+    margin: 0;
+}
+
+.cp-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #9ca3af;
+    cursor: pointer;
+}
+
+.cp-field {
+    margin-bottom: 20px;
+}
+
+.cp-field label {
+    display: block;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.cp-field textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
+    min-height: 100px;
+}
+
+.cp-option-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.cp-option-input input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.cp-remove {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.cp-add-btn {
+    background: none;
+    border: 1.5px dashed #d1d5db;
+    color: #6b7280;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.cp-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.cp-cancel {
+    padding: 10px 20px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #4b5563;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cp-submit {
+    padding: 10px 24px;
+    background: #3b82f6;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cp-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

@@ -59,7 +59,7 @@ const ReferralDashboard = () => {
 
   const handleStatusUpdate = async (id, status) => {
     try {
-      await axios.put(`http://localhost:5000/api/referrals/${id}/status`, { status });
+      await axios.put(`/api/referrals/${id}/status`, { status });
       // Refresh the lists
       fetchReferrals();
     } catch (error) {
