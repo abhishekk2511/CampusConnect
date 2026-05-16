@@ -4,8 +4,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const cookie = require("cookie-parser");
 exports.rolesignup = async (req, res) => {
+  let registerstudent = null;
   try {
-    
     const role = req.body.role;
     const rollNo = req.body.rollNo;
     const password = req.body.password;
@@ -19,38 +19,46 @@ exports.rolesignup = async (req, res) => {
     const jobTitle = req.body.jobTitle || "";
     const image = req.file ? req.file.filename : "default.png";
 
+    // Validate required fields
+    if (!rollNo || !password || !name || !email || !year || !branch) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
     const existingUser = await Rolesignup.findOne({ rollNo });
-    
-    if (existingUser != null) {
-      return res.status(400).json({ message: "Username already taken" });
+    if (existingUser) {
+      return res.status(400).json({ message: "This Roll Number is already registered" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const registerstudent = await Rolesignup.create({
+    // Step 1: Create auth record
+    registerstudent = await Rolesignup.create({
       role,
       rollNo,
       password: hashedPassword,
     });
 
-    // Create the Profile immediately
+    // Step 2: Create Profile — if this fails, rollback auth record
     await Profile.create({
       name,
       branch,
-      year,
+      year: String(year),
       email,
-      rollNo,
+      rollNo: String(rollNo),
       image,
       company,
       jobTitle
     });
 
-    res.status(200).json({
-      message: "sucs ",
-    });
+    res.status(200).json({ message: "Account created successfully!" });
 
   } catch (err) {
-    console.log(err, "err from backened", err);
+    console.error("Signup error:", err);
+    // Rollback: delete auth record if profile creation failed
+    if (registerstudent) {
+      await Rolesignup.deleteOne({ _id: registerstudent._id }).catch(() => {});
+    }
+    res.status(500).json({ message: "Signup failed. Please try again.", error: err.message });
   }
 };
 

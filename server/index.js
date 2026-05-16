@@ -16,7 +16,7 @@ const DB = process.env.DB;
 
 const corsoptions = {
   origin: "http://localhost:3000",
-  methods: "GET,POST,DELETE",
+  methods: "GET,POST,PUT,DELETE,PATCH",
   credentials: true
 };
 

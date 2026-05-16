@@ -39,10 +39,11 @@ const Signup = () => {
       await axios.post("http://localhost:5000/api/signup", formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert('Account created successfully! Redirecting to sign in...');
+      alert('Account created successfully! Please sign in.');
       navigate('/signin');
     } catch (error) {
-      alert("Something went wrong during signup. Please check your details.");
+      const msg = error.response?.data?.message || "Something went wrong during signup. Please try again.";
+      alert(msg);
     } finally {
       setLoading(false);
     }

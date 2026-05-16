@@ -56,16 +56,16 @@ exports.getAllUploads = async(req,res) => {
 
 exports.getmyUploads = async(req,res) => {
     try {
-        console.log("my called")
-        const {rollNo}=req.body;
-        console.log("roll",rollNo)
-        const uploads = await uploadpost.find({rollNo}).populate('profileid').sort({ _id: -1 });
-        console.log(uploads)        
+        const {rollNo} = req.body;
+        const uploads = await uploadpost.find({
+            $or: [{ rollNo }, { rollNo: String(rollNo) }]
+        }).sort({ _id: -1 });
         res.status(200).json(uploads);
     } catch(error) {
         res.status(500).json({ error: error.message });
     } 
 }
+
 
 // ── NEW: Comments and single post ──
 

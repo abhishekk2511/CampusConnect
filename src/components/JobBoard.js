@@ -62,13 +62,14 @@ const JobBoard = () => {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      // Force mock data immediately if the database is unreachable
-      setTimeout(() => {
-        setJobs(mockJobsData);
-        setLoading(false);
-      }, 300);
+      const res = await axios.get('http://localhost:5000/api/jobs');
+      // If DB has jobs, show them + mock ones; otherwise just mock
+      const realJobs = res.data || [];
+      setJobs(realJobs.length > 0 ? [...realJobs, ...mockJobsData] : mockJobsData);
     } catch (error) {
-      console.error(error);
+      console.error("Jobs API failed, using mock data:", error);
+      setJobs(mockJobsData); // Fallback to mock data
+    } finally {
       setLoading(false);
     }
   };

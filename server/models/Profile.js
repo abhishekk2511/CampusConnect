@@ -9,10 +9,10 @@ const profileSchema= new mongoose.Schema({
             
             image:{
                 type:String,
-                required:true,
+                default: 'default.png',
             },
             year:{
-                type:Number,
+                type:String,
                 required:true,
             },
 

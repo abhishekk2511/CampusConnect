@@ -184,7 +184,7 @@ const Messages = ({ selectedFriend }) => {
                             {messages.map((msg, i) => {
                                 // msg.sender is populated, so it's an object. 
                                 // We need to check the ID.
-                                const isReceived = (msg.sender._id || msg.sender) === activeConvo.otherUser._id;
+                                const isReceived = (msg.sender?._id?.toString() || msg.sender?.toString()) === activeConvo.otherUser._id?.toString();
                                 return (
                                     <div key={i} className={`chat-bubble-wrap ${isReceived ? 'received' : 'sent'}`}>
                                         <div className="chat-bubble">
