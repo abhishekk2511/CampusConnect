@@ -23,8 +23,12 @@ exports.messages = async (req, res) => {
                 { new: true }
               ).populate('messages');
               
+              const io = req.app.get('io');
+              if (io) {
+                  io.emit('newMessage', newmessage);
+              }
+
               res.status(200).json({
-               
                 message
               })
       }

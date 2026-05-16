@@ -54,7 +54,8 @@ const ResumeAnalyzer = () => {
       setStatus('results');
     } catch (error) {
       console.error('Error analyzing resume:', error);
-      alert('Failed to analyze resume. Please try again.');
+      const errorMsg = error.response?.data?.error || 'Failed to analyze resume. Please try again.';
+      alert(errorMsg);
       setStatus('idle');
     }
   };
@@ -94,7 +95,7 @@ const ResumeAnalyzer = () => {
             type="file" 
             ref={fileInputRef} 
             onChange={handleFileChange} 
-            accept=".pdf,.doc,.docx"
+            accept=".pdf"
             style={{ display: 'none' }} 
           />
           
@@ -130,12 +131,36 @@ const ResumeAnalyzer = () => {
           </div>
           
           <div className="feedback-section">
-            <h3>Key Feedback</h3>
-            <ul className="feedback-list">
-              {results.feedback.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <h3>Detailed AI Analysis</h3>
+            
+            <div className="feedback-grid">
+              {results.strengths && results.strengths.length > 0 && (
+                <div className="feedback-card strengths">
+                  <h4><span role="img" aria-label="check">✅</span> Strengths</h4>
+                  <ul>
+                    {results.strengths.map((item, idx) => <li key={idx}>{item}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {results.weaknesses && results.weaknesses.length > 0 && (
+                <div className="feedback-card weaknesses">
+                  <h4><span role="img" aria-label="cross">⚠️</span> Areas to Improve</h4>
+                  <ul>
+                    {results.weaknesses.map((item, idx) => <li key={idx}>{item}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {results.suggestions && results.suggestions.length > 0 && (
+                <div className="feedback-card suggestions">
+                  <h4><span role="img" aria-label="bulb">💡</span> Actionable Suggestions</h4>
+                  <ul>
+                    {results.suggestions.map((item, idx) => <li key={idx}>{item}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="action-buttons">

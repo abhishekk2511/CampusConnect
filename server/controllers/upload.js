@@ -34,6 +34,12 @@ exports.uploadImage = async (req, res) => {
             { $push: { posts: newpost._id } }
         );
           
+        // Emit real-time event
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('postCreated', newpost);
+        }
+
         console.log("Upload successful!");
         res.status(200).json({
             success: true,
@@ -96,6 +102,12 @@ exports.addComment = async(req,res) => {
             return res.status(404).json({ error: "Post not found" });
         }
         
+        // Emit real-time event
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('postUpdated', updatedPost);
+        }
+        
         res.status(200).json(updatedPost);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -128,6 +140,13 @@ exports.likePost = async(req,res) => {
         }
         
         await post.save();
+
+        // Emit real-time event
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('postUpdated', post);
+        }
+
         res.status(200).json(post);
         
     } catch (error) {

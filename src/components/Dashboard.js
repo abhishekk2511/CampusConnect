@@ -180,6 +180,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("feed");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState(null); // ← New state
   const [notifications, setNotifications] = useState([]); // ← Real notifications
@@ -340,6 +341,13 @@ const Dashboard = () => {
     navigate("/signin");
   };
   const home = () => navigate("/");
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
 
   /* ── Loading ── */
   if (loading) {
@@ -654,6 +662,9 @@ const Dashboard = () => {
               <button className="db-action-btn" onClick={uploadHandler}>📤 <span>Upload a Post</span></button>
               <button className="db-action-btn" onClick={() => setActiveTab("messages")}>💬 <span>Messages</span></button>
               <Link to="/myprofile" className="db-action-btn">👤 <span>Edit Profile</span></Link>
+              <button className="db-action-btn" onClick={toggleTheme}>
+                {theme === 'light' ? '🌙' : '☀️'} <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+              </button>
               <button className="db-action-btn" onClick={home}>🌐 <span>Visit Home Page</span></button>
             </div>
 

@@ -60,7 +60,7 @@
   border: 1px solid var(--border);
 }
 
-.allpost-item-left button {
+.allpost-item-left button, .read-more-btn {
   background: none;
   border: none;
   color: var(--gold);
@@ -69,4 +69,131 @@
   cursor: pointer;
   padding: 0;
   margin-top: 4px;
+}
+
+/* ── Actions ── */
+.allpost-actions {
+  display: flex;
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: #f1f5f9;
+  color: var(--ink);
+}
+
+.action-btn.liked {
+  color: #ef4444;
+}
+
+/* ── Comments Section ── */
+.comments-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.comment-author {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.comment-author:hover {
+  text-decoration: underline;
+  color: var(--gold);
+}
+
+.comment-time {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.comment-text {
+  font-size: 0.85rem;
+  color: #334155;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.no-comments {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
+.comment-input-area {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-input-area input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.comment-input-area input:focus {
+  border-color: var(--gold);
+}
+
+.comment-input-area button {
+  background: var(--gold);
+  color: var(--white);
+  border: none;
+  padding: 0 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.comment-input-area button:hover {
+  opacity: 0.9;
 }

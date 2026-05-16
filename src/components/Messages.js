@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 import './Message.css';
 
 const Messages = ({ selectedFriend }) => {
@@ -25,9 +26,20 @@ const Messages = ({ selectedFriend }) => {
     useEffect(() => {
         if (activeConvo) {
             fetchMessages(activeConvo.otherUser._id);
-            // Poll for new messages every 3 seconds
-            const interval = setInterval(() => fetchMessages(activeConvo.otherUser._id), 3000);
-            return () => clearInterval(interval);
+            
+            // Connect to WebSocket
+            const socket = io('http://localhost:5000');
+            
+            socket.on('newMessage', (msgObj) => {
+                // If message belongs to current chat
+                if (msgObj.sender === activeConvo.otherUser._id || msgObj.receiverId === activeConvo.otherUser._id) {
+                   fetchMessages(activeConvo.otherUser._id);
+                }
+            });
+
+            return () => {
+                socket.disconnect();
+            };
         }
     }, [activeConvo]);
 

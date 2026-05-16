@@ -1355,3 +1355,220 @@ body {
 .engage-btn:hover {
   color: var(--gold);
 }
+
+/* ─────────────────────────────────────────
+   RIGHT PANEL
+───────────────────────────────────────── */
+.db-right-panel {
+  width: var(--right-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: calc(var(--navbar-h) + 28px);
+  height: max-content;
+  max-height: calc(100vh - var(--navbar-h) - 40px);
+  overflow-y: auto;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.db-right-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.db-widget {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 20;
+}
+
+.db-widget-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.db-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.db-action-btn:hover {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.db-action-btn span {
+  flex: 1;
+  text-align: left;
+}
+
+.db-empty-msg {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* Mentor Rows in Widget */
+.db-mentor-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.db-mentor-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.db-mentor-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.db-mentor-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.db-mentor-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.db-mentor-co {
+  font-size: 0.7rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.db-connect-btn {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold-dark);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.db-connect-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--white);
+}
+
+.db-connect-btn:disabled {
+  border-color: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.db-connect-btn.sent {
+  background: var(--cream-dark);
+  border-color: transparent;
+  color: var(--ink);
+}
+
+.db-connect-btn.connecting {
+  opacity: 0.7;
+}
+
+/* Campus Card */
+.db-campus-card {
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+}
+
+.db-campus-card h4 {
+  color: var(--cream);
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+
+.db-campus-card p {
+  font-size: 0.8rem;
+  color: rgba(245, 240, 232, 0.7);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.db-campus-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.db-campus-stats {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgba(245, 240, 232, 0.1);
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.db-campus-stats div {
+  display: flex;
+  flex-direction: column;
+}
+
+.db-campus-stats strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+}
+
+.db-campus-stats span {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: rgba(245, 240, 232, 0.5);
+  letter-spacing: 0.05em;
+}

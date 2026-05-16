@@ -1,4 +1,28 @@
-*{
+* {
   padding: 0;
   margin: 0;
+}
+
+/* ─────────────────────────────────────────
+   GLOBAL THEME VARIABLES (Dark Mode)
+───────────────────────────────────────── */
+[data-theme="dark"] {
+  --ink: #f5f0e8;        /* Light cream text instead of black */
+  --cream: #0d0d0d;      /* Dark ink background instead of cream */
+  --cream-dark: #1a1a1a; /* Slightly lighter dark background */
+  --gold: #d4b455;       /* Brighter gold for contrast */
+  --gold-dark: #ecd37a;  /* Even brighter gold for hover */
+  --muted: #94a3b8;      /* Lighter gray for secondary text */
+  --white: #141414;      /* Very dark gray for cards (instead of white) */
+  --border: rgba(245, 240, 232, 0.12); /* Light border */
+  --input-bg: #1a1a1a;   /* Dark input background */
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Base transition for common elements to make toggling smooth */
+.db-main, .db-right-panel, .db-sidebar, .post-card, .allpost-item, .profile-main-card {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }

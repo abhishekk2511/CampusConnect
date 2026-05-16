@@ -73,6 +73,12 @@ exports.sendMessage = async (req, res) => {
             link: 'messages'
         });
 
+        // Emit real-time event
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('newMessage', { chatId: chat._id, receiverId, text, sender: myProfile._id });
+        }
+
         res.status(200).json(chat);
     } catch (error) {
         res.status(500).json({ message: "Failed to send message" });

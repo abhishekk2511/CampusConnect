@@ -36,6 +36,11 @@ const NotFound = () => (
 );
 
 function App() {
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
   return (
     <>
     <RollNoProvider>
