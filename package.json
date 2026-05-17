@@ -2,6 +2,7 @@
   "name": "mediaclg",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -39,7 +40,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "backened": "cd server && npm start",
-    "dev": "concurrently \"npm run start\" \"npm run backened\""
+    "dev": "concurrently \"npm run start\" \"npm run backened\"",
+    "build:prod": "npm install && cd server && npm install && cd .. && npm run build",
+    "start:prod": "node server/index.js"
   },
   "eslintConfig": {
     "extends": [

@@ -28,7 +28,7 @@ const Messages = ({ selectedFriend }) => {
             fetchMessages(activeConvo.otherUser._id);
             
             // Connect to WebSocket
-            const socket = io(window.location.hostname === 'localhost' ? '' : '');
+            const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
             
             socket.on('newMessage', (msgObj) => {
                 // If message belongs to current chat

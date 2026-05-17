@@ -42,6 +42,14 @@ const userroutes = require("./routes/route");
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/", userroutes);
 
+// Serve frontend build assets in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../build')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../build', 'index.html'));
+  });
+}
+
 // Socket.io Setup
 const server = http.createServer(app);
 const io = new Server(server, {

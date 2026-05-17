@@ -33,7 +33,7 @@ const Allpost = () => {
     fetchUploads();
 
     // Connect to WebSocket
-    const socket = io(window.location.hostname === 'localhost' ? '' : '');
+    const socket = io(window.location.hostname === 'localhost' ? 'http://localhost:5000' : '');
 
     socket.on('postCreated', (newPost) => {
       setUploads(prev => [newPost, ...prev]);
