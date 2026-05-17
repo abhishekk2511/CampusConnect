@@ -218,7 +218,7 @@ const Dashboard = ({ forceTab }) => {
     const fetchProfile = async () => {
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/getprofile",
+          "/api/getprofile",
           { token }
         );
         if (response.data && response.data.uploads) {
@@ -253,7 +253,7 @@ const Dashboard = ({ forceTab }) => {
 
   const fetchPolls = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/polls');
+      const res = await axios.get('/api/polls');
       setPolls(res.data);
     } catch (error) {
       console.error("Error fetching polls:", error);
@@ -262,7 +262,7 @@ const Dashboard = ({ forceTab }) => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/notifications/get", { token });
+      const res = await axios.post("/api/notifications/get", { token });
       if (Array.isArray(res.data)) {
         setNotifications(res.data);
         setUnreadCount(res.data.filter(n => !n.read).length);
@@ -284,7 +284,7 @@ const Dashboard = ({ forceTab }) => {
 
   const fetchSuggestions = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/people/suggestions", { token });
+      const res = await axios.post("/api/people/suggestions", { token });
       setSuggestions(res.data);
     } catch (e) {
       console.log("Suggestions fetch error", e);
@@ -293,7 +293,7 @@ const Dashboard = ({ forceTab }) => {
 
   const loadSentRequests = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/getprofile", { token });
+      const res = await axios.post("/api/getprofile", { token });
       const sentIds = (res.data?.uploads?.sentRequests || []).map(id => String(id));
       if (sentIds.length) setSentRequests(prev => [...new Set([...prev, ...sentIds])]);
     } catch (e) {}
@@ -303,7 +303,7 @@ const Dashboard = ({ forceTab }) => {
     if (sentRequests.includes(rollNo) || connectingTo === rollNo) return;
     setConnectingTo(rollNo);
     try {
-      await axios.post("http://localhost:5000/api/friends/request", { token, targetRollNo: rollNo });
+      await axios.post("/api/friends/request", { token, targetRollNo: rollNo });
       setSentRequests(prev => [...prev, rollNo]);
     } catch (e) {
       const msg = e?.response?.data?.message || "Failed to send request";
@@ -318,7 +318,7 @@ const Dashboard = ({ forceTab }) => {
     setSearchQuery(query);
     if (query.trim().length > 1) {
       try {
-        const res = await axios.post("http://localhost:5000/api/people/search", { query });
+        const res = await axios.post("/api/people/search", { query });
         setSearchResults(res.data);
         setShowSearch(true);
       } catch (e) {
@@ -332,7 +332,7 @@ const Dashboard = ({ forceTab }) => {
 
   const markAllRead = async () => {
     try {
-      await axios.post("http://localhost:5000/api/notifications/mark-all-read", { token });
+      await axios.post("/api/notifications/mark-all-read", { token });
       fetchNotifications();
     } catch (e) {}
   };
@@ -340,7 +340,7 @@ const Dashboard = ({ forceTab }) => {
   const handleNotifClick = async (notif) => {
     try {
       if (!notif.read) {
-        await axios.post("http://localhost:5000/api/notifications/mark-read", { token, notificationId: notif._id });
+        await axios.post("/api/notifications/mark-read", { token, notificationId: notif._id });
       }
       setShowNotifications(false);
       if (notif.link) setActiveTab(notif.link);
@@ -411,7 +411,7 @@ const Dashboard = ({ forceTab }) => {
               {searchResults.map(user => (
                 <Link to={`/getprofile/${user.rollNo}`} key={user.rollNo} className="db-search-item">
                   <div className="si-avatar">
-                    {user.image ? <img src={`http://localhost:5000/uploads/${user.image}`} alt="" /> : user.name.charAt(0)}
+                    {user.image ? <img src={`/uploads/${user.image}`} alt="" /> : user.name.charAt(0)}
                   </div>
                   <div className="si-info">
                     <p className="si-name">{user.name}</p>
@@ -461,7 +461,7 @@ const Dashboard = ({ forceTab }) => {
                       >
                         <div className="notif-avatar">
                           {notif.sender?.image ? (
-                            <img src={`http://localhost:5000/uploads/${notif.sender.image}`} alt="" />
+                            <img src={`/uploads/${notif.sender.image}`} alt="" />
                           ) : (
                             <span>{notif.sender?.name?.charAt(0)}</span>
                           )}
@@ -479,7 +479,7 @@ const Dashboard = ({ forceTab }) => {
           </div>
           <div className="db-nav-avatar" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {profileData.image ? (
-              <img src={`http://localhost:5000/uploads/${profileData.image}`} alt="Avatar" className="avatar-img" />
+              <img src={`/uploads/${profileData.image}`} alt="Avatar" className="avatar-img" />
             ) : (
               profileData.name?.charAt(0).toUpperCase()
             )}
@@ -491,7 +491,7 @@ const Dashboard = ({ forceTab }) => {
           <div className="db-profile-card">
             <div className="db-avatar-large">
               {profileData.image ? (
-                <img src={`http://localhost:5000/uploads/${profileData.image}`} alt="Avatar" className="avatar-img-large" />
+                <img src={`/uploads/${profileData.image}`} alt="Avatar" className="avatar-img-large" />
               ) : (
                 profileData.name?.charAt(0).toUpperCase()
               )}
@@ -666,7 +666,7 @@ const Dashboard = ({ forceTab }) => {
                     <Link to={`/getprofile/${user.rollNo}`} className="db-mentor-clickable">
                       <div className="db-mentor-avatar">
                         {user.image ? (
-                          <img src={`http://localhost:5000/uploads/${user.image}`} alt="" className="avatar-img-small" />
+                          <img src={`/uploads/${user.image}`} alt="" className="avatar-img-small" />
                         ) : (
                           user.name?.charAt(0)
                         )}

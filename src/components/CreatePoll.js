@@ -36,7 +36,7 @@ const CreatePoll = ({ onPollCreated, onClose }) => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.post('http://localhost:5000/api/polls', {
+            const res = await axios.post('/api/polls', {
                 question,
                 options,
                 token

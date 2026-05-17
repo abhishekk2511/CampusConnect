@@ -14,7 +14,7 @@ const PollWidget = ({ poll, onVote }) => {
         if (hasVoted || voting) return;
         setVoting(true);
         try {
-            const res = await axios.post('http://localhost:5000/api/polls/vote', {
+            const res = await axios.post('/api/polls/vote', {
                 pollId: poll._id,
                 optionIndex: index,
                 token
@@ -31,7 +31,7 @@ const PollWidget = ({ poll, onVote }) => {
         <div className="poll-card">
             <div className="poll-header">
                 <img 
-                    src={poll.createdBy.image?.startsWith('http') ? poll.createdBy.image : `http://localhost:5000/uploads/${poll.createdBy.image || 'default.png'}`} 
+                    src={poll.createdBy.image?.startsWith('http') ? poll.createdBy.image : `/uploads/${poll.createdBy.image || 'default.png'}`} 
                     alt="" 
                     className="poll-author-img"
                 />

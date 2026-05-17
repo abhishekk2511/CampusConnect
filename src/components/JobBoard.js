@@ -69,7 +69,7 @@ const JobBoard = () => {
     setLoading(true);
     try {
       const { search, location, type } = filters;
-      let url = 'http://localhost:5000/api/jobs?';
+      let url = '/api/jobs?';
       if (search) url += `search=${search}&`;
       if (location) url += `location=${location}&`;
       if (type && type !== 'All') url += `type=${type}&`;
@@ -111,7 +111,7 @@ const JobBoard = () => {
         rollNo: userInfo.id || userInfo.rollNo
       };
 
-      await axios.post('http://localhost:5000/api/jobs', payload);
+      await axios.post('/api/jobs', payload);
       setShowModal(false);
       setFormData({
         title: '', company: '', location: '', type: 'Full-time', description: '', applyLink: ''
@@ -148,7 +148,7 @@ const JobBoard = () => {
         token
       };
 
-      await axios.post('http://localhost:5000/api/referrals', payload);
+      await axios.post('/api/referrals', payload);
       setShowReferralModal(false);
       setSelectedJob(null);
       setReferralData({ pitch: '', resumeLink: '' });

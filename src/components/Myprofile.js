@@ -22,7 +22,7 @@ export const Myprofile = () => {
     const fetchProfile = async () => {
         try {
             setLoading(true);
-            const response = await axios.post('http://localhost:5000/api/getprofile', { token });
+            const response = await axios.post('/api/getprofile', { token });
             const data = response.data.uploads || null;
             if (data) {
                 const profileObj = {
@@ -49,7 +49,7 @@ export const Myprofile = () => {
                     const decoded = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
                     if (decoded.rollNo) {
                         setProfile(prev => ({ ...prev, rollNo: decoded.rollNo }));
-                        const postsRes = await axios.post('http://localhost:5000/api/myuploads', { rollNo: decoded.rollNo });
+                        const postsRes = await axios.post('/api/myuploads', { rollNo: decoded.rollNo });
                         setPosts(postsRes.data || []);
                     }
                 } catch (e) {}
@@ -89,7 +89,7 @@ export const Myprofile = () => {
             formData.append('jobTitle', editForm.jobTitle);
             if (editForm.newImage) formData.append('setimage', editForm.newImage);
 
-            const res = await axios.post('http://localhost:5000/api/editprofile', formData, {
+            const res = await axios.post('/api/editprofile', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             if (res.data.success) {
@@ -114,7 +114,7 @@ export const Myprofile = () => {
             formData.append('token', token);
             formData.append('doc', file);
 
-            const res = await axios.post('http://localhost:5000/api/verify/request', formData, {
+            const res = await axios.post('/api/verify/request', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             
@@ -130,7 +130,7 @@ export const Myprofile = () => {
     };
 
     const avatarSrc = imagePreview ||
-        (profile.image ? `http://localhost:5000/uploads/${profile.image}` : null);
+        (profile.image ? `/uploads/${profile.image}` : null);
 
     const initials = profile.name ? profile.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : '?';
 
@@ -290,7 +290,7 @@ export const Myprofile = () => {
                                     {post.image && (
                                         <div className="mp-pc-media">
                                             <img
-                                                src={post.image.startsWith('http') ? post.image : `http://localhost:5000/uploads/${post.image}`}
+                                                src={post.image.startsWith('http') ? post.image : `/uploads/${post.image}`}
                                                 alt=""
                                             />
                                         </div>

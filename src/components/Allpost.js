@@ -22,7 +22,7 @@ const Allpost = () => {
 
   const fetchUploads = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/alluploads');
+      const response = await axios.get('/api/alluploads');
       setUploads(response.data);
     } catch (error) {
       console.error('Error fetching uploads:', error);
@@ -33,7 +33,7 @@ const Allpost = () => {
     fetchUploads();
 
     // Connect to WebSocket
-    const socket = io('http://localhost:5000');
+    const socket = io(window.location.hostname === 'localhost' ? '' : '');
 
     socket.on('postCreated', (newPost) => {
       setUploads(prev => [newPost, ...prev]);
@@ -75,7 +75,7 @@ const Allpost = () => {
         return post;
       }));
 
-      await axios.post(`http://localhost:5000/api/posts/${postId}/likes`, { token, rollNo: currentRollNo });
+      await axios.post(`/api/posts/${postId}/likes`, { token, rollNo: currentRollNo });
     } catch (error) {
       console.error('Error liking post:', error);
       fetchUploads(); // Revert on failure
@@ -98,7 +98,7 @@ const Allpost = () => {
       }));
       setCommentText({ ...commentText, [postId]: '' });
 
-      await axios.post('http://localhost:5000/api/comments', {
+      await axios.post('/api/comments', {
         postId,
         content: text,
         author: currentName,
@@ -116,7 +116,7 @@ const Allpost = () => {
       // Optimistic update
       setUploads(uploads.filter(post => post._id !== postId));
       
-      await axios.post(`http://localhost:5000/api/posts/${postId}/delete`, { token });
+      await axios.post(`/api/posts/${postId}/delete`, { token });
     } catch (error) {
       console.error('Error deleting post:', error);
       alert("Failed to delete post.");
@@ -141,7 +141,7 @@ const Allpost = () => {
                   <Link to={`/getprofile/${upload.rollNo}`} className="allpost-profile-link">
                     <div className="allpost-avatar">
                       {upload.authorImage ? (
-                        <img src={`http://localhost:5000/uploads/${upload.authorImage}`} alt="" />
+                        <img src={`/uploads/${upload.authorImage}`} alt="" />
                       ) : (
                         upload.name?.charAt(0).toUpperCase()
                       )}
@@ -179,7 +179,7 @@ const Allpost = () => {
                 {upload.image && (
                   <div className="allpost-image-wrap">
                     <img
-                      src={`http://localhost:5000/uploads/${upload.image}`}
+                      src={`/uploads/${upload.image}`}
                       alt={upload.description}
                       className="allpost-image"
                       onError={(e) => { e.target.style.display = 'none'; }}

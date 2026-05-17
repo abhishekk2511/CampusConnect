@@ -28,7 +28,7 @@ const Signup = () => {
     }
     setLoading(true);
     try {
-      await axios.post("http://localhost:5000/api/send-otp", { email });
+      await axios.post("/api/send-otp", { email });
       setShowOtpModal(true);
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to send OTP. Please check your email address.";
@@ -57,7 +57,7 @@ const Signup = () => {
       }
       formData.append('otp', otp);
 
-      await axios.post("http://localhost:5000/api/signup", formData, {
+      await axios.post("/api/signup", formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       alert('Account created successfully! Please sign in.');

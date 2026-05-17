@@ -8,7 +8,7 @@ const AdminDashboard = () => {
 
     const fetchPending = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/admin/pending');
+            const res = await axios.get('/api/admin/pending');
             setPendingUsers(res.data);
         } catch (error) {
             console.error("Error fetching pending verifications:", error);
@@ -23,7 +23,7 @@ const AdminDashboard = () => {
 
     const handleAction = async (userId, status) => {
         try {
-            await axios.post('http://localhost:5000/api/admin/handle-verify', { userId, status });
+            await axios.post('/api/admin/handle-verify', { userId, status });
             alert(`User ${status} successfully`);
             fetchPending();
         } catch (error) {
@@ -60,7 +60,7 @@ const AdminDashboard = () => {
                                     <td>{user.branch}</td>
                                     <td>
                                         <a 
-                                            href={`http://localhost:5000/uploads/${user.verificationDoc}`} 
+                                            href={`/uploads/${user.verificationDoc}`} 
                                             target="_blank" 
                                             rel="noopener noreferrer"
                                             className="admin-view-doc"
